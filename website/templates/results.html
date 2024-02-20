@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Predicted Label: {{predicted_label}}</h1>
+<img src="{{retina_img_path}}" alt="Original Image" width="500" height="500">
+<img src="{{retina_gradcam_img_path}}" alt="GradCAM Image" width="500" height="500">
+
+<form action="correct_prediction" method=POST>
+    {% csrf_token %}
+    {{correct_label_form}}
+    <input type="submit" value="Submit">
+</form>
+
+{% endblock %}

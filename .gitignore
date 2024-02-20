@@ -1,0 +1,5 @@
+test_images
+train_images
+.venv
+.DS_Store
+website/media

@@ -1,10 +1,36 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 
+
 <h1>Predicted Label: {{predicted_label}}</h1>
-<img src="{{retina_img_path}}" alt="Original Image" width="500" height="500">
-<img src="{{retina_gradcam_img_path}}" alt="GradCAM Image" width="500" height="500">
+
+<img src="{{retina_img_path}}" alt="Original Image" width="500" height="500" id="original_image">
+<img src="{{retina_gradcam_img_path}}" alt="GradCAM Image" width="500" height="500" id="shap_image">
+<canvas id="canvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+<div style="margin-top:5px">
+    <span>Color: </span>
+    <label>
+        <input type="radio" name="colorRadio" value="black" checked hidden/>
+        <span style="display: inline-block; width: 20px; height: 20px; background: black;"></span>
+    </label>
+    <label>
+        <input type="radio" name="colorRadio" value="white" hidden/>
+        <span style="display: inline-block; width: 20px; height: 20px; background: white;"></span>
+    </label>
+    <label>
+        <input type="radio" name="colorRadio" value="red" hidden/>
+        <span style="display: inline-block; width: 20px; height: 20px; background: red;"></span>
+    </label>
+    <label>
+        <input type="radio" name="colorRadio" value="green" hidden/>
+        <span style="display: inline-block; width: 20px; height: 20px; background: green;"></span>
+    </label>
+    <label>
+        <input type="radio" name="colorRadio" value="blue" hidden/>
+        <span style="display: inline-block; width: 20px; height: 20px; background: blue;"></span>
+    </label>
+</div>
 
 <form action="correct_prediction" method=POST>
     {% csrf_token %}
@@ -12,4 +38,6 @@
     <input type="submit" value="Submit">
 </form>
 
+<script src="{% static 'js/jQuery_3.7.1.js' %}"></script>
+<script src="{% static 'js/draw.js' %}"></script>
 {% endblock %}

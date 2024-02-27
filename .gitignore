@@ -3,3 +3,4 @@ train_images
 .venv
 .DS_Store
 website/media
+website/staticfiles

@@ -30,6 +30,8 @@ function drawOnImage(image = null) {
     const canvasElement = document.getElementById("canvas");
     const context = canvasElement.getContext("2d");
 
+    const gridSize = 25;
+
     // if an image is present,
     // the image passed as parameter is drawn in the canvas
     if (image) {
@@ -49,27 +51,27 @@ function drawOnImage(image = null) {
 
     canvasElement.onmousedown = (e) => {
         isDrawing = true;
-        context.beginPath();
-        context.lineWidth = 10;
-        context.strokeStyle = color;
-        context.lineJoin = "round";
-        context.lineCap = "round";
-        getPosition(e);
-        context.moveTo(coord.x, coord.y);
+        getPosit;ion(e);
+        drawGridBox(context, coord.x, coord.y, gridSize)
     };
 
     canvasElement.onmousemove = (e) => {
         if (isDrawing) {
             getPosition(e);
-            context.lineTo(coord.x, coord.y);
-            context.stroke();
+            drawGridBox(context, coord.x, coord.y, gridSize);
         }
     };
 
     canvasElement.onmouseup = function () {
         isDrawing = false;
-        context.closePath();
     };
+
+    function drawGridBox(ctx, x, y, size) {
+        const gridX = Math.floor(x / size) * size;
+        const gridY = Math.floor(y / size) * size;
+        ctx.fillStyle = color;
+        ctx.fillRect(gridX, gridY, size, size);
+    }
 }
 
 $(document).ready(function() {

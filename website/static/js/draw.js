@@ -18,6 +18,14 @@ colorElement.forEach((c) => {
     };
 });
 
+// Transparency
+const transparencyElement = document.querySelector("#transparency");
+let transparency = transparencyElement.value;
+transparencyElement.oninput = (e) => {
+    transparency = e.target.value;
+    document.getElementById("shap_image").style.opacity = transparency;
+};
+
 function drawOnImage(image = null) {
     const canvasElement = document.getElementById("canvas");
     const context = canvasElement.getContext("2d");

@@ -47,6 +47,8 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
     predicted_class = int(np.round(out.cpu().detach().numpy()).astype(int).sum() - 1)
     cams = cam_extractor(predicted_class, out)
 
-    gradcam_image = torchcam.utils.overlay_mask(to_pil_image(original_image_tensor), to_pil_image(cams[0].squeeze(0), mode='F'), alpha=0.6)
+    print(cams)
+
+    gradcam_image = torchcam.utils.overlay_mask(to_pil_image(original_image_tensor), to_pil_image(cams[0].squeeze(0), mode='F'), alpha=0.6, colormap='bwr')
 
     return predicted_class, gradcam_image

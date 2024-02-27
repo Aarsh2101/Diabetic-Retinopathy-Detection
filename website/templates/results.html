@@ -5,9 +5,18 @@
 
 <h1>Predicted Label: {{predicted_label}}</h1>
 
-<img src="{{retina_img_path}}" alt="Original Image" width="500" height="500" id="original_image">
+<div style="position: relative; width: 500px; height: 500px;">
+    <img src="{{retina_img_path}}" id="original_image" alt="Original Image" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+    <img src="{{retina_gradcam_img_path}}" id="shap_image" alt="GradCAM Image" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+    <canvas id="canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:1px solid #000000;"></canvas>
+</div>
+<div style="margin-top:5px">
+    <label for="transparency">Transparency of SHAP img: </label>
+    <input type="range" id="transparency" name="transparency" min="0" max="1" step="0.1" value="1">
+</div>
+<!-- <img src="{{retina_img_path}}" alt="Original Image" width="500" height="500" id="original_image">
 <img src="{{retina_gradcam_img_path}}" alt="GradCAM Image" width="500" height="500" id="shap_image">
-<canvas id="canvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+<canvas id="canvas" width="500" height="500" style="border:1px solid #000000;"></canvas> -->
 <div style="margin-top:5px">
     <span>Color: </span>
     <label>

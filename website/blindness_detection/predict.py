@@ -8,6 +8,7 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
     from torchvision import models
     from torchvision.transforms.functional import to_pil_image
     import torchcam
+    import matplotlib.pyplot as plt
     
     device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     
@@ -47,8 +48,16 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
     predicted_class = int(np.round(out.cpu().detach().numpy()).astype(int).sum() - 1)
     cams = cam_extractor(predicted_class, out)
 
-    print(cams)
+    mask = cams[0].squeeze(0)
+    # print(mask)
+    normalized_mask = (mask - mask.min()) / (mask.max() - mask.min()) 
+    normalized_mask = normalized_mask * (1 - (-1)) + (-1)
+    def custom_colormap():
+        # Define custom colormap
+        cmap = plt.cm.colors.ListedColormap(['#218AE5', '#ACD3F5', '#FFFFFF', '#FFA5C0', '#FF1D62'])
+        return cmap
 
-    gradcam_image = torchcam.utils.overlay_mask(to_pil_image(original_image_tensor), to_pil_image(cams[0].squeeze(0), mode='F'), alpha=0.6, colormap='bwr')
+    custom_cmap = custom_colormap()
+    gradcam_image = torchcam.utils.overlay_mask(to_pil_image(original_image_tensor), to_pil_image(mask, mode='F'), alpha=0.6, colormap=custom_cmap)
 
     return predicted_class, gradcam_image

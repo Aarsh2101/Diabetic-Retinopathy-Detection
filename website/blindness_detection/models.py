@@ -6,3 +6,6 @@ class RetinaPhoto(models.Model):
     
     def __str__(self):
         return self.image.name
+
+class CanvasImage(models.Model):
+    image = models.ImageField(upload_to='canvas_images/')

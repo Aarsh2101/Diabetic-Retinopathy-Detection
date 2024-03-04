@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from django.conf import settings
+from django.core.files.base import ContentFile
+from django.http import HttpResponse, JsonResponse
 from .forms import RetinaPhotoForm, CorrectLabelForm
-from django.http import HttpResponse
+from .models import CanvasImage
 from .predict import get_predicted_label_and_gradcam
 from PIL import Image
-import os
+import os, json, base64
 
 
 # Create your views here.
@@ -17,6 +19,7 @@ def predict(request):
             img = form.instance.image
             img = Image.open(img)
             img_name = os.path.basename(form.instance.image.name)
+            request.session['img_name'] = img_name  # Store img_name in the session data
             retina_gradcam_img_path = settings.MEDIA_URL + 'retina_gradcam_images/' + img_name
             predicted_label, gradcam_image = get_predicted_label_and_gradcam(img)
             gradcam_image.save(retina_gradcam_img_path[1:])
@@ -28,7 +31,6 @@ def predict(request):
             'correct_label_form': correct_label_form,
             }
             return render(request, 'results.html', context)
-            # return HttpResponse('File uploaded')
     else:
         form = RetinaPhotoForm()
         context = {'form': form}
@@ -44,3 +46,22 @@ def correct_prediction(request):
         form = CorrectLabelForm()
         context = {'form': form}
     return HttpResponse('Correct prediction page')
+
+
+def save_canvas_image(request):
+    
+    if request.method == 'POST':
+        # print(request.data)
+        data = json.loads(request.body)
+        image_data_url = data['imageDataUrl']
+        format, imgstr = image_data_url.split(';base64,') 
+        ext = format.split('/')[-1] 
+        data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        img_name = request.session.get('img_name', 'default.png')
+        
+        canvas_image = CanvasImage()  # Assuming your model has an ImageField named 'image'
+        canvas_image.image.save(img_name, data, save=True)
+        
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})

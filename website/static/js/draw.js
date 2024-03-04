@@ -1,5 +1,4 @@
 let coord = {x:0 , y:0};  
-
 function getPosition(event){ 
     const rect = canvas.getBoundingClientRect();
     coord.x = event.clientX - rect.left; 
@@ -50,13 +49,17 @@ function drawOnImage(image = null) {
     let isDrawing;
 
     canvasElement.onmousedown = (e) => {
-        isDrawing = true;
-        getPosit;ion(e);
-        drawGridBox(context, coord.x, coord.y, gridSize)
+        if (e.button === 0) { // Left mouse button clicked
+            isDrawing = true;
+            getPosition(e);
+            drawGridBox(context, coord.x, coord.y, gridSize);
+        }
+        
+        
     };
 
     canvasElement.onmousemove = (e) => {
-        if (isDrawing) {
+        if (isDrawing && e.buttons === 1) {
             getPosition(e);
             drawGridBox(context, coord.x, coord.y, gridSize);
         }
@@ -66,13 +69,49 @@ function drawOnImage(image = null) {
         isDrawing = false;
     };
 
+    canvasElement.addEventListener('contextmenu', function (e) {
+        e.preventDefault(); // Prevent the default right-click menu
+        getPosition(e);
+        eraseGridBox(context, coord.x, coord.y, gridSize);
+    });
+
     function drawGridBox(ctx, x, y, size) {
         const gridX = Math.floor(x / size) * size;
         const gridY = Math.floor(y / size) * size;
         ctx.fillStyle = color;
         ctx.fillRect(gridX, gridY, size, size);
     }
+
+    function eraseGridBox(ctx, x, y, size) {
+        const gridX = Math.floor(x / size) * size;
+        const gridY = Math.floor(y / size) * size;
+        ctx.clearRect(gridX, gridY, size, size);
+    }
 }
+
+document.getElementById("getCanvasImage").addEventListener("click", function() {
+    const canvasElement = document.getElementById("canvas");
+    const imageDataUrl = canvasElement.toDataURL(); // Convert canvas to data URL
+    fetch('/save_canvas_image', { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+        },
+        body: JSON.stringify({imageDataUrl: imageDataUrl})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Image uploaded successfully');
+        } else {
+            console.error('Failed to upload image');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
 
 $(document).ready(function() {
     let image = document.getElementById("original_image");

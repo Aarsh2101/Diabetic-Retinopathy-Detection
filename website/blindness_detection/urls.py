@@ -4,5 +4,6 @@ from . import views
 urlpatterns = [
     path('', views.predict, name='predict'),
     path('predict', views.predict, name='predict'),
-    path('correct_prediction', views.correct_prediction, name='correct_prediction')
+    path('correct_prediction', views.correct_prediction, name='correct_prediction'),
+    path('save_canvas_image', views.save_canvas_image, name='save_canvas_image')
 ]

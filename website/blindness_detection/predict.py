@@ -49,15 +49,9 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
     cams = cam_extractor(predicted_class, out)
 
     mask = cams[0].squeeze(0)
-    # print(mask)
-    normalized_mask = (mask - mask.min()) / (mask.max() - mask.min()) 
-    normalized_mask = normalized_mask * (1 - (-1)) + (-1)
-    def custom_colormap():
-        # Define custom colormap
-        cmap = plt.cm.colors.ListedColormap(['#218AE5', '#ACD3F5', '#FFFFFF', '#FFA5C0', '#FF1D62'])
-        return cmap
 
-    custom_cmap = custom_colormap()
-    gradcam_image = torchcam.utils.overlay_mask(to_pil_image(original_image_tensor), to_pil_image(mask, mode='F'), alpha=0.6, colormap=custom_cmap)
+    custom_cmap = plt.cm.colors.ListedColormap(['#218AE5', '#ACD3F5', '#FFFFFF', '#FFA5C0', '#FF1D62'])
+    
+    gradcam_image = torchcam.utils.overlay_mask(to_pil_image(original_image_tensor), to_pil_image(mask, mode='F'), alpha=0.0, colormap=custom_cmap)
 
     return predicted_class, gradcam_image

@@ -1,0 +1,43 @@
+/* results.css */
+
+#original_image, #shap_image, #canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#canvas {
+    border: 1px solid #000000;
+}
+
+.legend {
+    width: 500px;
+    height: 20px;
+    background: linear-gradient(to right, #218AE5, #ACD3F5, white, #FFA5C0, #FF1D62);
+    margin-top: 20px;
+    border-style: solid;
+}
+
+.legend-labels {
+    width: 500px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+.transparency-slider {
+    margin-top: 5px;
+}
+
+.color-radio {
+    margin-top: 5px;
+}
+
+.color-radio span {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-style: solid;
+}

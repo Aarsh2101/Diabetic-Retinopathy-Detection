@@ -2,42 +2,56 @@
 {% load static %}
 {% block content %}
 
+<!-- Link to the CSS file -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/results.css' %}">
 
 <h1>Predicted Label: {{predicted_label}}</h1>
 
+<!-- images -->
 <div style="position: relative; width: 500px; height: 500px;">
-    <img src="{{retina_img_path}}" id="original_image" alt="Original Image" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-    <img src="{{retina_gradcam_img_path}}" id="shap_image" alt="GradCAM Image" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-    <canvas id="canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:1px solid #000000;"></canvas>
+    <img src="{{retina_img_path}}" id="original_image" alt="Original Image">
+    <img src="{{retina_gradcam_img_path}}" id="shap_image" alt="GradCAM Image">
+    <canvas id="canvas"></canvas>
 </div>
-<div style="margin-top:5px">
+
+<!-- legend -->
+<div class="legend"></div>
+<p class="legend-labels">
+    <span>Low</span>
+    <span>High</span>
+</p>
+
+<!-- transparency slider -->
+<div class="transparency-slider">
     <label for="transparency">Transparency of SHAP img: </label>
     <input type="range" id="transparency" name="transparency" min="0" max="1" step="0.1" value="1">
 </div>
 <!-- <img src="{{retina_img_path}}" alt="Original Image" width="500" height="500" id="original_image">
 <img src="{{retina_gradcam_img_path}}" alt="GradCAM Image" width="500" height="500" id="shap_image">
 <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;"></canvas> -->
-<div style="margin-top:5px">
-    <span>Color: </span>
+
+<!-- color radio buttons -->
+<div class="color-radio">
+    <div>Color: </div>
     <label>
         <input type="radio" name="colorRadio" value="#218AE5" checked hidden/>
-        <span style="display: inline-block; width: 20px; height: 20px; border-style: solid; background: #218AE5;"></span>
+        <span style="background: #218AE5;"></span>
     </label>
     <label>
         <input type="radio" name="colorRadio" value="#ACD3F5" hidden/>
-        <span style="display: inline-block; width: 20px; height: 20px; border-style: solid; background: #ACD3F5;"></span>
+        <span style="background: #ACD3F5;"></span>
     </label>
     <label>
         <input type="radio" name="colorRadio" value="white" hidden/>
-        <span style="display: inline-block; width: 20px; height: 20px; border-style: solid; background: white;"></span>
+        <span style="background: white;"></span>
     </label>
     <label>
         <input type="radio" name="colorRadio" value="#FFA5C0" hidden/>
-        <span style="display: inline-block; width: 20px; height: 20px; border-style: solid; background: #FFA5C0;"></span>
+        <span style="background: #FFA5C0;"></span>
     </label>
     <label>
         <input type="radio" name="colorRadio" value="#FF1D62" hidden/>
-        <span style="display: inline-block; width: 20px; height: 20px; border-style: solid; background: #FF1D62;"></span>
+        <span style="background: #FF1D62;"></span>
     </label>
 </div>
 

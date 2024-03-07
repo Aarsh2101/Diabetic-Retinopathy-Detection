@@ -17,8 +17,9 @@
 <!-- legend -->
 <div class="legend"></div>
 <p class="legend-labels">
-    <span>Low</span>
-    <span>High</span>
+    {% for value in legend_values %}
+    <span>{{ value }}</span>
+    {% endfor %}
 </p>
 
 <!-- transparency slider -->

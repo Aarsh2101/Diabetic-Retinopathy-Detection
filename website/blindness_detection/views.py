@@ -12,6 +12,9 @@ import os, json, base64
 
 # Create your views here.
 
+def index(request):
+    return render(request, 'index.html')
+
 def predict(request):
     if request.method == 'POST':
         form = RetinaPhotoForm(request.POST, request.FILES)

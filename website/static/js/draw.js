@@ -115,7 +115,13 @@ document.getElementById("getCanvasImage").addEventListener("click", function() {
 
 $(document).ready(function() {
     let image = document.getElementById("original_image");
-    image.onload = () => {
+    if (image.complete) {
+        console.log('Image already loaded');
         drawOnImage(image);
-    };
+    } else {
+        image.onload = () => {
+            console.log('Image loaded');
+            drawOnImage(image);
+        };
+    }
 });

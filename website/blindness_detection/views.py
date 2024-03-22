@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
 from .forms import RetinaPhotoForm, CorrectLabelForm
 from .models import CanvasImage
-from .predict import get_predicted_label_and_gradcam
+from .DDRpredict import get_predicted_label_and_gradcam
 import numpy as np
 from PIL import Image
 import os, json, base64
@@ -25,12 +25,15 @@ def predict(request):
             img_name = os.path.basename(form.instance.image.name)
             request.session['img_name'] = img_name  # Store img_name in the session data
             retina_gradcam_img_path = settings.MEDIA_URL + 'retina_gradcam_images/' + img_name
-            predicted_label, gradcam_image, mask_range = get_predicted_label_and_gradcam(img)
+            cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
+            cropped_image, predicted_label, gradcam_image, mask_range = get_predicted_label_and_gradcam(img)
             legend_values = [round(num, 3) for num in np.linspace(mask_range['min'], mask_range['max'], 5).tolist()]
             gradcam_image.save(retina_gradcam_img_path[1:])
+            cropped_image.save(cropped_img_path[1:])
 
             correct_label_form = CorrectLabelForm()
             context = {'predicted_label': predicted_label,
+            'cropped_img_path': cropped_img_path,
             'retina_img_path': form.instance.image.url,
             'retina_gradcam_img_path': retina_gradcam_img_path,
             'correct_label_form': correct_label_form,

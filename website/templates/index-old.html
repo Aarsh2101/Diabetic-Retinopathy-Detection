@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<!-- Link to the CSS file -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+
+<header>
+    <h1>Welcome to RetinaCheck</h1>
+    <p>Empowering Early Detection of Diabetic Retinopathy</p>
+</header>
+<section id="why-choose-us">
+    <h2>Why Choose RetinaCheck?</h2>
+    <ul>
+        <li>Fast and Accurate Predictions</li>
+        <li>Contribute to Science</li>
+        <li>Understand Your Results</li>
+        <li>Your Input Matters</li>
+    </ul>
+</section>
+<section id="how-it-works">
+    <h2>How It Works</h2>
+    <ol>
+        <li>Upload Your Image</li>
+        <li>Receive AI Analysis</li>
+        <li>Feedback & Correction</li>
+    </ol>
+</section>
+<section id="join-our-community">
+    <h2>Join Our Community</h2>
+    <p>RetinaCheck is more than a diagnostic tool; it's a community effort to advance medical AI.</p>
+    <button id="login">Login</button>
+    <button id="register">Register</button>
+</section>
+<footer>
+    <a href="#">FAQ</a> | <a href="#">Contact Us</a>
+</footer>
+<!-- <script src="script.js"></script> -->
+
+{% endblock %}

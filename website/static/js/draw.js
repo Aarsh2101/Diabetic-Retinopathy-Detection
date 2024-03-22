@@ -29,7 +29,12 @@ function drawOnImage(image = null) {
     const canvasElement = document.getElementById("canvas");
     const context = canvasElement.getContext("2d");
 
-    const gridSize = 25;
+    // Box size
+    const boxSizeElement = document.querySelector("#blockSize");
+    let gridSize = boxSizeElement.value;
+    boxSizeElement.oninput = (e) => {
+        gridSize = e.target.value;
+    };
 
     // if an image is present,
     // the image passed as parameter is drawn in the canvas

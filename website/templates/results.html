@@ -9,7 +9,7 @@
 
 <!-- images -->
 <div style="position: relative; width: 500px; height: 500px;">
-    <img src="{{retina_img_path}}" id="original_image" alt="Original Image">
+    <img src="{{cropped_img_path}}" id="original_image" alt="Original Image">
     <img src="{{retina_gradcam_img_path}}" id="shap_image" alt="GradCAM Image">
     <canvas id="canvas"></canvas>
 </div>
@@ -26,6 +26,10 @@
 <div class="transparency-slider">
     <label for="transparency">Transparency of SHAP img: </label>
     <input type="range" id="transparency" name="transparency" min="0" max="1" step="0.1" value="1">
+</div>
+<div class="size-slider">
+    <label for="blockSize">Block size: </label>
+    <input type="range" id="blockSize" name="blockSize" min="1" max="100" step="1" value="10">
 </div>
 <!-- <img src="{{retina_img_path}}" alt="Original Image" width="500" height="500" id="original_image">
 <img src="{{retina_gradcam_img_path}}" alt="GradCAM Image" width="500" height="500" id="shap_image">

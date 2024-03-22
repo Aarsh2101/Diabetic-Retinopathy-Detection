@@ -1,8 +1,4 @@
-test_images
-train_images
 .venv
 .DS_Store
-website/media
 website/staticfiles
-website/db.sqlite3
 DDR-dataset

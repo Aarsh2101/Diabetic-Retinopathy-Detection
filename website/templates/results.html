@@ -2,9 +2,6 @@
 {% load static %}
 {% block content %}
 
-<!-- Link to the CSS file -->
-<link rel="stylesheet" type="text/css" href="{% static 'css/results.css' %}">
-
 <h1>Predicted Label: {{predicted_label}}</h1>
 
 <!-- images -->
@@ -68,6 +65,4 @@
     <input type="submit" value="Submit">
 </form>
 
-<script src="{% static 'js/jQuery_3.7.1.js' %}"></script>
-<script src="{% static 'js/draw.js' %}"></script>
 {% endblock %}

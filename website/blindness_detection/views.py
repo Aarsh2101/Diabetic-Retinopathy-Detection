@@ -20,6 +20,11 @@ def predict(request):
         form = RetinaPhotoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+
+            user = 'guest'
+            if request.user.is_authenticated:
+                user = request.user.username
+
             img = form.instance.image
             img = Image.open(img)
             img_name = os.path.basename(form.instance.image.name)
@@ -37,7 +42,8 @@ def predict(request):
             'retina_img_path': form.instance.image.url,
             'retina_gradcam_img_path': retina_gradcam_img_path,
             'correct_label_form': correct_label_form,
-            'legend_values': legend_values
+            'legend_values': legend_values,
+            'username': user
             }
             return render(request, 'results.html', context)
     else:

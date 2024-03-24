@@ -10,9 +10,9 @@
 		<noscript><link rel="stylesheet" href="{% static 'css/noscript.css' %}" /></noscript>
 		<link rel="stylesheet" type="text/css" href="{% static 'css/results.css' %}">
 	</head>
-    <body class="is-preload landing">
-		<div id="page-wrapper">
 
+    <body class="is-preload  {% if request.path == '/' %}landing{% endif %}">
+		<div id="page-wrapper">
 			<!-- Header -->
 				<header id="header">
 					<h1 id="logo"><a href="{% url 'index' %}">RetinaCheck</a></h1>
@@ -43,6 +43,5 @@
 			<script src="{% static 'js/browser.min.js' %}"></script>
 			<script src="{% static 'js/breakpoints.min.js' %}"></script>
 			<script src="{% static 'js/main.js' %}"></script>
-			<script src="{% static 'js/draw.js' %}"></script>
     </body>
 </html>

@@ -2,7 +2,7 @@ from django import forms
 from .models import RetinaPhoto
 
 class RetinaPhotoForm(forms.ModelForm):
-    image = forms.ImageField(label='Select a photo of your retina')
+    image = forms.ImageField(label=False, widget=forms.FileInput(attrs={'class': 'your-class-name'}))
 
     class Meta:
         model = RetinaPhoto

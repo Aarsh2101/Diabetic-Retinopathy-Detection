@@ -4,7 +4,7 @@ function getPosition(event){
     coord.x = event.clientX - rect.left; 
     coord.y = event.clientY - rect.top; 
 } 
-    
+
 const colorElement = document.getElementsByName("colorRadio");
 let color;
 colorElement.forEach((c) => {
@@ -14,6 +14,14 @@ colorElement.forEach((c) => {
 colorElement.forEach((c) => {
     c.onclick = () => {
         color = c.value;
+
+        // Remove the 'selected-color' class from all <span> elements
+        document.querySelectorAll('.color-radio span').forEach((span) => {
+            span.classList.remove('selected-color');
+        });
+
+        // Add the 'selected-color' class to the <span> element corresponding to the clicked radio button
+        c.nextElementSibling.classList.add('selected-color');
     };
 });
 
@@ -94,9 +102,13 @@ function drawOnImage(image = null) {
     }
 }
 
-document.getElementById("getCanvasImage").addEventListener("click", function() {
+// Save the canvas image
+document.getElementById("prediction-form").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent the form from submitting normally
+
     const canvasElement = document.getElementById("canvas");
     const imageDataUrl = canvasElement.toDataURL(); // Convert canvas to data URL
+
     fetch('/save_canvas_image', { 
         method: 'POST',
         headers: {
@@ -109,6 +121,7 @@ document.getElementById("getCanvasImage").addEventListener("click", function() {
     .then(data => {
         if (data.success) {
             console.log('Image uploaded successfully');
+            event.target.submit(); // Submit the form after the image is saved
         } else {
             console.error('Failed to upload image');
         }
@@ -117,6 +130,7 @@ document.getElementById("getCanvasImage").addEventListener("click", function() {
         console.error('Error:', error);
     });
 });
+
 
 $(document).ready(function() {
     let image = document.getElementById("original_image");
@@ -129,4 +143,41 @@ $(document).ready(function() {
             drawOnImage(image);
         };
     }
+});
+
+function showForm(isCorrect) {
+    var form = document.getElementById('correct_label_form');
+    if (isCorrect) {
+        form.style.display = 'none';
+    } else {
+        form.style.display = 'block';
+    }
+}
+
+document.getElementById('yes-button').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent the button from submitting the form
+
+    const canvasElement = document.getElementById("canvas");
+    const imageDataUrl = canvasElement.toDataURL(); // Convert canvas to data URL
+
+    fetch('/save_canvas_image', { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+        },
+        body: JSON.stringify({imageDataUrl: imageDataUrl})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Image uploaded successfully');
+            document.getElementById('prediction-form').submit(); // Submit the form after the image is saved
+        } else {
+            console.error('Failed to upload image');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 });

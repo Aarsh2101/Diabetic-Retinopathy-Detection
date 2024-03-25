@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 class RetinaPhoto(models.Model):
@@ -7,5 +8,24 @@ class RetinaPhoto(models.Model):
     def __str__(self):
         return self.image.name
 
+class GradcamImage(models.Model):
+    image = models.ImageField(upload_to='retina_gradcam_images/')
+    
+    def __str__(self):
+        return self.image.name
+
 class CanvasImage(models.Model):
     image = models.ImageField(upload_to='canvas_images/')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.PROTECT, related_name='canvas_images')
+
+class CorrectLabel(models.Model):
+    LABEL_CHOICES = [
+        ('0', '0'),
+        ('1', '1'),
+        ('2', '2'),
+        ('3', '3'),
+        ('4', '4'),
+        # Add more choices as needed
+    ]
+    correct_label = models.CharField(max_length=1, choices=LABEL_CHOICES, default='0')
+    image_name = models.CharField(max_length=255)

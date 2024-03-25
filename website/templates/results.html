@@ -76,7 +76,7 @@
                 {% for field in correct_label_form %}
                     <div class="col-4 col-12-medium">
                         {% for choice in field.field.choices %}
-                            <input type="radio" id="{{ field.auto_id }}_{{ forloop.counter }}" name="{{ field.html_name }}" value="{{ choice.0 }}" {% if field.value == choice.0 %}checked{% endif %}>
+                            <input type="radio" id="{{ field.auto_id }}_{{ forloop.counter }}" name="{{ field.html_name }}" value="{{ choice.0 }}" {% if choice.0 == predicted_label %}checked{% endif %}>
                             <label for="{{ field.auto_id }}_{{ forloop.counter }}">{{ choice.1 }}</label>
                         {% endfor %}
                     </div>

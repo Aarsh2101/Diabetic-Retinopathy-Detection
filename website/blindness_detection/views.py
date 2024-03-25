@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
@@ -41,14 +41,15 @@ def predict(request):
             cropped_image.save(cropped_img_path[1:])
 
 
-            correct_label_form = CorrectLabelForm(initial={'image_name': img_name})
-            context = {'predicted_label': predicted_label,
-            'cropped_img_path': cropped_img_path,
-            'retina_img_path': form.instance.image.url,
-            'retina_gradcam_img_path': retina_gradcam_img_path,
-            'correct_label_form': correct_label_form,
-            'legend_values': legend_values,
-            'username': user
+            correct_label_form = CorrectLabelForm()
+            context = {
+                'predicted_label': str(predicted_label),
+                'cropped_img_path': cropped_img_path,
+                'retina_img_path': form.instance.image.url,
+                'retina_gradcam_img_path': retina_gradcam_img_path,
+                'correct_label_form': correct_label_form,
+                'legend_values': legend_values,
+                'username': user
             }
             return render(request, 'results.html', context)
     else:
@@ -62,14 +63,12 @@ def correct_prediction(request):
         post_data['image_name'] = request.session.get('img_name', 'default.png')  # Add image_name
         form = CorrectLabelForm(post_data)  # Use the modified POST data
 
-        print(form.errors)
         if form.is_valid():
-            print('here')
             form.save()
     else:
         form = CorrectLabelForm()
         context = {'form': form}
-    return HttpResponse('Correct prediction page')
+    return redirect('predict')
 
 
 def save_canvas_image(request):

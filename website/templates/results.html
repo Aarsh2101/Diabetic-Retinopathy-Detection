@@ -71,7 +71,7 @@
     
         <div id="correct_label_form" style="display: none;">
             <h3>Correct Prediction</h3>
-            <form id="prediction-form" action="correct_prediction" method="POST" enctype="multipart/form-data">
+            <form id="prediction-form" class="center-content"  action="correct_prediction" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% for field in correct_label_form %}
                     <div class="col-4 col-12-medium">

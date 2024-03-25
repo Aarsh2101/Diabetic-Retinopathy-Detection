@@ -84,7 +84,7 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
         nn.Linear(model.fc.in_features, num_classes),
         nn.Sigmoid()
     )
-    model.load_state_dict(torch.load('website/blindness_detection/DDRresnet50.pth', map_location=device))
+    model.load_state_dict(torch.load('/path/to/local/file Detection/website/blindness_detection/DDRresnet50.pth', map_location=device))
 
 
     preprocess = v2.Compose([

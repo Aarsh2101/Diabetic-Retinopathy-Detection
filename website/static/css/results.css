@@ -151,3 +151,16 @@ input[type=range]::-moz-range-thumb {
 #prediction-buttons {
     margin: 25px 0px;
 }
+
+#correct_label_form h3 {
+    margin: 0 0 10px;
+    text-align: center;
+}
+
+.radio-button {
+    margin: 10px;
+}
+
+#prediction-form label {
+    margin: 0 0 10px;
+}

@@ -14,13 +14,9 @@ colorElement.forEach((c) => {
 colorElement.forEach((c) => {
     c.onclick = () => {
         color = c.value;
-
-        // Remove the 'selected-color' class from all <span> elements
         document.querySelectorAll('.color-radio span').forEach((span) => {
             span.classList.remove('selected-color');
         });
-
-        // Add the 'selected-color' class to the <span> element corresponding to the clicked radio button
         c.nextElementSibling.classList.add('selected-color');
     };
 });
@@ -102,6 +98,53 @@ function drawOnImage(image = null) {
     }
 }
 
+$(document).ready(function() {
+    let image = document.getElementById("original_image");
+    if (image.complete) {
+        console.log('Image already loaded');
+        drawOnImage(image);
+    } else {
+        image.onload = () => {
+            console.log('Image loaded');
+            drawOnImage(image);
+        };
+    }
+    // Draw the initial grid
+    drawGrid(blockSizeSlider.value);
+});
+
+
+// Get the grid canvas and context
+var gridCanvas = document.getElementById('grid-canvas');
+var gridContext = gridCanvas.getContext('2d');
+// Get the block size slider
+var blockSizeSlider = document.getElementById('blockSize');
+
+// Function to draw grid lines
+function drawGrid(blockSize) {
+    canvas = document.getElementById('canvas');
+    gridCanvas.width = canvas.width;
+    gridCanvas.height = canvas.height;
+    console.log(gridCanvas.width, gridCanvas.height);
+    gridContext.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+
+    // Draw the grid lines
+    for (var x = 0; x <= gridCanvas.width; x += Number(blockSize)) {
+        gridContext.moveTo(x, 0);
+        gridContext.lineTo(x, gridCanvas.height);
+    }
+    for (var y = 0; y <= gridCanvas.height; y += Number(blockSize)) {
+        gridContext.moveTo(0, y);
+        gridContext.lineTo(gridCanvas.width, y);
+    }
+    gridContext.strokeStyle = 'black';
+    gridContext.stroke();
+}
+// Listen for changes to the block size slider
+blockSizeSlider.addEventListener('input', function() {
+    drawGrid(blockSizeSlider.value);
+});
+
 // Save the canvas image
 document.getElementById("prediction-form").addEventListener("submit", function(event) {
     event.preventDefault(); // Prevent the form from submitting normally
@@ -129,20 +172,6 @@ document.getElementById("prediction-form").addEventListener("submit", function(e
     .catch(error => {
         console.error('Error:', error);
     });
-});
-
-
-$(document).ready(function() {
-    let image = document.getElementById("original_image");
-    if (image.complete) {
-        console.log('Image already loaded');
-        drawOnImage(image);
-    } else {
-        image.onload = () => {
-            console.log('Image loaded');
-            drawOnImage(image);
-        };
-    }
 });
 
 function showForm(isCorrect) {

@@ -19,7 +19,7 @@
 					<nav id="nav">
 						<ul>
 							<li><a href="{% url 'index' %}">Home</a></li>
-							<li><a href="{% url 'predict' %}">Predict</a></li>
+							<li><a href="{% url 'predict' %}">Model</a></li>
 							{% if user.is_authenticated %}
 								<!-- User is logged in, so don't show the login and register buttons -->
 								<li><a href="{% url 'logout' %}" class="button primary">Log out</a></li>

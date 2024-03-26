@@ -1,6 +1,6 @@
 /* results.css */
 
-#original_image, #shap_image, #canvas {
+#original_image, #shap_image, #canvas, #grid-canvas {
     position: absolute;
     top: 0;
     left: 0;

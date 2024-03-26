@@ -34,6 +34,7 @@ def predict(request):
             cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
 
             cropped_image, predicted_label, gradcam_image, mask_range = get_predicted_label_and_gradcam(img)
+            labels = ['No DR', 'Mild DR', 'Moderate DR', 'Severe DR', 'Proliferative DR']
 
             legend_values = [round(num, 3) for num in np.linspace(mask_range['min'], mask_range['max'], 5).tolist()]
             
@@ -43,7 +44,7 @@ def predict(request):
 
             correct_label_form = CorrectLabelForm()
             context = {
-                'predicted_label': str(predicted_label),
+                'predicted_label': labels[predicted_label],
                 'cropped_img_path': cropped_img_path,
                 'retina_img_path': form.instance.image.url,
                 'retina_gradcam_img_path': retina_gradcam_img_path,

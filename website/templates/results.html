@@ -10,7 +10,9 @@
         <div class="image-container">
             <img src="{{cropped_img_path}}" id="original_image" alt="Original Image">
             <img src="{{retina_gradcam_img_path}}" id="shap_image" alt="GradCAM Image">
+            <canvas id="grid-canvas"></canvas>
             <canvas id="canvas"></canvas>
+            
         </div>
         <!-- legend -->
         <div class="legend-container">
@@ -32,7 +34,7 @@
         <!-- block size slider -->
         <div class="size-slider">
             <label for="blockSize">Block size: </label>
-            <input type="range" id="blockSize" name="blockSize" min="10" max="70" step="1" value="20">
+            <input type="range" id="blockSize" name="blockSize" min="10" max="70" step="1" value="25">
         </div>
     </div>
 

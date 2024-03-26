@@ -20,12 +20,12 @@ class CanvasImage(models.Model):
 
 class CorrectLabel(models.Model):
     LABEL_CHOICES = [
-        ('0', '0'),
-        ('1', '1'),
-        ('2', '2'),
-        ('3', '3'),
-        ('4', '4'),
+        ('No DR', 'No DR'),
+        ('Mild DR', 'Mild DR'),
+        ('Moderate DR', 'Moderate DR'),
+        ('Severe DR', 'Severe DR'),
+        ('Proliferative DR', 'Proliferative DR'),
         # Add more choices as needed
     ]
-    correct_label = models.CharField(max_length=1, choices=LABEL_CHOICES, default='0')
+    correct_label = models.CharField(max_length=100, choices=LABEL_CHOICES, default='No DR')
     image_name = models.CharField(max_length=255)

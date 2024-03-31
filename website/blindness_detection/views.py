@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.decorators import login_required
 from .forms import RetinaPhotoForm, CorrectLabelForm
 from .models import *
 from .DDRpredict import get_predicted_label_and_gradcam
@@ -11,20 +12,24 @@ import os, json, base64
 from io import BytesIO
 
 
+
+
 # Create your views here.
 
 def index(request):
     return render(request, 'index.html')
 
+@login_required(login_url='/login/')
 def predict(request):
     if request.method == 'POST':
         form = RetinaPhotoForm(request.POST, request.FILES)
         if form.is_valid():
+            form.instance.user = request.user
             form.save()
 
-            user = 'guest'
-            if request.user.is_authenticated:
-                user = request.user.username
+            # user = 'guest'
+            # if request.user.is_authenticated:
+            user = request.user.username
 
             img = form.instance.image
             img = Image.open(img)
@@ -33,10 +38,10 @@ def predict(request):
             retina_gradcam_img_path = settings.MEDIA_URL + 'retina_gradcam_images/' + img_name
             cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
 
-            cropped_image, predicted_label, gradcam_image, mask_range = get_predicted_label_and_gradcam(img)
+            cropped_image, predicted_label, gradcam_image, legend_range = get_predicted_label_and_gradcam(img)
             labels = ['No DR', 'Mild DR', 'Moderate DR', 'Severe DR', 'Proliferative DR']
 
-            legend_values = [round(num, 3) for num in np.linspace(mask_range['min'], mask_range['max'], 5).tolist()]
+            legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
             
             gradcam_image.save(retina_gradcam_img_path[1:])
             cropped_image.save(cropped_img_path[1:])
@@ -55,7 +60,9 @@ def predict(request):
             return render(request, 'results.html', context)
     else:
         form = RetinaPhotoForm()
-        context = {'form': form}
+        context = {
+            'form': form,
+            }
     return render(request, 'predict.html', context)
 
 def correct_prediction(request):
@@ -80,14 +87,41 @@ def save_canvas_image(request):
         image_data_url = data['imageDataUrl']
         format, imgstr = image_data_url.split(';base64,') 
         ext = format.split('/')[-1] 
-        data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
         img_name = request.session.get('img_name', 'default.png')
+        data = ContentFile(base64.b64decode(imgstr), name=img_name)
         
-        canvas_image = CanvasImage()  # Assuming your model has an ImageField named 'image'
-        canvas_image.image.save(img_name, data, save=True)
-        canvas_image.created_by = request.user  # Assign the user
+        canvas_image = CanvasImage(image=data, created_by=request.user)
         canvas_image.save()
         
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
+
+def team(request):
+    context = {
+        'lead_team': [{
+                'name': 'Anuj Tiwari',
+                'description': 'Full Stack Developer',
+                'img': 'anuj.jpeg'
+        },
+        {
+                'name': 'Aarsh Patel',
+                'description': 'Machine Learning Engineer',
+                'img': 'aarsh.jpg'
+        }],
+        'research_team': [{
+                'name': 'John Doe',
+                'description': 'Machine Learning Engineer',
+                'img': 'john-doe.jpeg'
+        },
+        {
+                'name': 'John Doe',
+                'description': 'Machine Learning Engineer',
+                'img': 'john-doe.jpeg'
+        },
+        {
+                'name': 'John Doe',
+                'description': 'Machine Learning Engineer',
+                'img': 'john-doe.jpeg'
+        },]
+    }
+    return render(request, 'team.html', context)

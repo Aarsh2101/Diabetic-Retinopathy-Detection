@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/team.css' %}" />
+<section id="team" class="container">
+    <header class="major">
+        <h2>Lead Team</h2>
+    </header>
+    <div class="row">
+        {% for member in lead_team %}
+        <div class="col-4 col-12-medium">
+            <span class="image fit"><img class="team-image" src="{% static 'images/team/'|add:member.img %}" alt="{{ member.name }}" /></span>
+            <h3 class="center-text">{{ member.name }}</h3>
+            <p class="center-text">{{ member.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section id="team" class="container">
+    <header class="major">
+        <h2>Research Team</h2>
+    </header>
+    <div class="row">
+        {% for member in research_team %}
+        <div class="col-4 col-12-medium">
+            <span class="image fit"><img class="team-image" src="{% static 'images/team/'|add:member.img %}" alt="{{ member.name }}" /></span>
+            <h3 class="center-text">{{ member.name }}</h3>
+            <p class="center-text">{{ member.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -20,6 +20,7 @@
 						<ul>
 							<li><a href="{% url 'index' %}">Home</a></li>
 							<li><a href="{% url 'predict' %}">Model</a></li>
+							<li><a href="{% url 'team' %}">Team</a></li>
 							{% if user.is_authenticated %}
 								<!-- User is logged in, so don't show the login and register buttons -->
 								<li><a href="{% url 'logout' %}" class="button primary">Log out</a></li>

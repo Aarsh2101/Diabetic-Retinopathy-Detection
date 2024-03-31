@@ -125,7 +125,6 @@ function drawGrid(blockSize) {
     canvas = document.getElementById('canvas');
     gridCanvas.width = canvas.width;
     gridCanvas.height = canvas.height;
-    console.log(gridCanvas.width, gridCanvas.height);
     gridContext.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
 
     // Draw the grid lines

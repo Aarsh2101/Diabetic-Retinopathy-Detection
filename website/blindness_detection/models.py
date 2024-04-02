@@ -10,6 +10,7 @@ class RetinaPhoto(models.Model):
 
 class GradcamImage(models.Model):
     image = models.ImageField(upload_to='retina_gradcam_images/')
+    retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='gradcam_image')
     
     def __str__(self):
         return self.image.name
@@ -17,6 +18,8 @@ class GradcamImage(models.Model):
 class CanvasImage(models.Model):
     image = models.ImageField(upload_to='canvas_images/')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='canvas_images')
+    retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='canvas_image')
+
 
 class CorrectLabel(models.Model):
     LABEL_CHOICES = [

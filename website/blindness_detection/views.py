@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
@@ -12,6 +12,10 @@ import os, json, base64
 from io import BytesIO
 
 
+def pil_image_to_django_file(pil_image, image_name):
+    byte_arr = BytesIO()
+    pil_image.save(byte_arr, format='PNG')
+    return ContentFile(byte_arr.getvalue(), name=image_name)
 
 
 # Create your views here.
@@ -27,15 +31,12 @@ def predict(request):
             form.instance.user = request.user
             form.save()
 
-            # user = 'guest'
-            # if request.user.is_authenticated:
-            user = request.user.username
-
             img = form.instance.image
             img = Image.open(img)
             img_name = os.path.basename(form.instance.image.name)
             request.session['img_name'] = img_name  # Store img_name in the session data
-            retina_gradcam_img_path = settings.MEDIA_URL + 'retina_gradcam_images/' + img_name
+            # request.session['retina_photo_id'] = form.instance.id  # Store retina_photo_id in the session data
+            # retina_gradcam_img_path = settings.MEDIA_URL + 'retina_gradcam_images/' + img_name
             cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
 
             cropped_image, predicted_label, gradcam_image, legend_range = get_predicted_label_and_gradcam(img)
@@ -43,19 +44,20 @@ def predict(request):
 
             legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
             
-            gradcam_image.save(retina_gradcam_img_path[1:])
+            gradcam_image_django = pil_image_to_django_file(gradcam_image, img_name)
+            gradcam_image = GradcamImage(image=gradcam_image_django, retina_photo=form.instance)
+            gradcam_image.save()
+            # gradcam_image.save(retina_gradcam_img_path[1:])
             cropped_image.save(cropped_img_path[1:])
-
 
             correct_label_form = CorrectLabelForm()
             context = {
                 'predicted_label': labels[predicted_label],
                 'cropped_img_path': cropped_img_path,
                 'retina_img_path': form.instance.image.url,
-                'retina_gradcam_img_path': retina_gradcam_img_path,
+                'retina_gradcam_img_path': gradcam_image.image.url,
                 'correct_label_form': correct_label_form,
                 'legend_values': legend_values,
-                'username': user
             }
             return render(request, 'results.html', context)
     else:
@@ -88,9 +90,10 @@ def save_canvas_image(request):
         format, imgstr = image_data_url.split(';base64,') 
         ext = format.split('/')[-1] 
         img_name = request.session.get('img_name', 'default.png')
+        retina_photo = RetinaPhoto.objects.get(image = 'retina_images/'+ img_name )
         data = ContentFile(base64.b64decode(imgstr), name=img_name)
         
-        canvas_image = CanvasImage(image=data, created_by=request.user)
+        canvas_image = CanvasImage(image=data, created_by=request.user, retina_photo=retina_photo)
         canvas_image.save()
         
         return JsonResponse({'success': True})
@@ -125,3 +128,19 @@ def team(request):
         },]
     }
     return render(request, 'team.html', context)
+
+@login_required(login_url='/login/')
+def dashboard(request):
+    submissions = RetinaPhoto.objects.filter(user=request.user)
+    context = {
+        'submissions': submissions
+    }
+    return render(request, 'dashboard.html', context)
+
+def update_submission(request, submission_id):
+    submission = get_object_or_404(RetinaPhoto, pk=submission_id)
+    context = {
+        'text': 'get',
+        'image_url': submission.image.url
+    }
+    return render(request, 'update_submission.html', context)

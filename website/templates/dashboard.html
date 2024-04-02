@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
+<div class="container">
+    <table>
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Canvas Image</th>
+                <th>Predicted Class</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for submission in submissions %}
+                <tr>
+                    <td><img src="{{ submission.image.url }}" class="table-image" id="original_image_{{ submission.id }}" alt="Retina photo"></td>
+                    <td><img src="{{ submission.canvas_image.image.url }}" class="table-image" id="canvas_image_{{ submission.id }}" alt="Canvas image"></td>
+                    <td>{{ submission.predicted_class }}</td>
+                    <td>
+                        <a href="{% url 'update_submission' submission.id %}">Edit/View</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    <!-- <h2 class="center-text h2-heading">Predicted Severity: {{ submission.predicted_label }}</h2>
+        <div class="image-container" data-submission-id="{{ submission.id }}">
+            <img src="{{ submission.image.url }}" class="original_image" id="original_image_{{ submission.id }}" alt="Retina photo">
+            <img src="{{ submission.gradcam_image.image.url }}" class="gradcam_image" id="gradcam_image_{{ submission.id }}" alt="GradCAM image">
+            <img src="{{ submission.canvas_image.image.url }}" class="canvas_image" id="canvas_image_{{ submission.id }}" alt="Canvas image">
+        </div>
+        <div class="slider-container"> -->
+            <!-- gradcam transparency slider -->
+            <!-- <div class="gradcam-transparency-slider">
+                <label for="transparency">Transparency of importance image: </label>
+                <input type="range" id="gradcam_transparency_{{ submission.id }}" name="gradcam_transparency" min="0" max="1" step="0.1" value="1">
+            </div> -->
+            <!-- canvas transparency slider -->
+            <!-- <div class="canvas-transparency-slider">
+                <label for="transparency">Transparency of feedback: </label>
+                <input type="range" id="canvas_transparency_{{ submission.id }}" name="canvas_transparency" min="0" max="1" step="0.1" value="1">
+            </div>
+        </div> -->
+
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

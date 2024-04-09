@@ -23,8 +23,16 @@
 							<li><a href="{% url 'team' %}">Team</a></li>
 							{% if user.is_authenticated %}
 								<!-- User is logged in, so don't show the login and register buttons -->
-								<li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-								<li><a href="{% url 'logout' %}" class="button primary">Log out</a></li>
+								<!-- <li><a href="{% url 'dashboard' %}">Dashboard</a></li> -->
+								<li class="opener">
+									<img src="{{ user.profile_picture.url }}" class="profile-picture" alt="Profile Picture" style="width: 30px; height: 30px;">
+									<ul>
+										<li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+										<li><a href="{% url 'logout' %}" class="button primary">Log out</a></li>
+										<!-- Add more options here if needed -->
+									</ul>
+								</li>
+								<!-- <li><a href="{% url 'logout' %}" class="button primary">Log out</a></li> -->
 							{% else %}
 								<!-- User is not logged in, so show the login and register buttons -->
 								<li><a href="{% url 'login' %}" class="button primary">Login</a></li>

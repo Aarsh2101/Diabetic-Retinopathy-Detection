@@ -113,7 +113,6 @@ $(document).ready(function() {
     drawGrid(blockSizeSlider.value);
 });
 
-
 // Get the grid canvas and context
 var gridCanvas = document.getElementById('grid-canvas');
 var gridContext = gridCanvas.getContext('2d');
@@ -144,13 +143,25 @@ blockSizeSlider.addEventListener('input', function() {
     drawGrid(blockSizeSlider.value);
 });
 
-// Check if all colors are used
+// Check if the canvas is blank
+function isCanvasBlank(canvas) {
+    const context = canvas.getContext('2d');
+
+    const pixelBuffer = new Uint32Array(
+        context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+    );
+
+    return !pixelBuffer.some(color => color !== 0);
+}
+
 function areAllColorsUsed(canvas) {
     // Get the colors from the color radio buttons
     const colorElements = document.getElementsByName("colorRadio");
     const availableColors = Array.from(colorElements).map(c => c.value);
+    // console.log(availableColors);
     // Get the colors drawn on the canvas
     const drawnColors = getCanvasColors(canvas);
+    // console.log(drawnColors);
     // Check if all available colors are used
     return availableColors.every(color => drawnColors.includes(color));
 }
@@ -180,79 +191,48 @@ function rgbToHex(red, green, blue) {
     return "#" + ((1 << 24) + (red << 16) + (green << 8) + blue).toString(16).slice(1);
 }
 
-
-
 // Save the canvas image
-document.getElementById("prediction-form").addEventListener("submit", function(event) {
+document.getElementById("prediction-form").addEventListener("submit", function (event) {
     const canvasElement = document.getElementById("canvas");
-    event.preventDefault(); // Prevent the form from submitting normally
+    // console.log(areAllColorsUsed(canvasElement));
+    if (!isCanvasBlank(canvasElement)) {
+        event.preventDefault(); // Prevent the form from submitting normally
+        if (areAllColorsUsed(canvasElement)) {
 
-    if (areAllColorsUsed(canvasElement)) {
-        const imageDataUrl = canvasElement.toDataURL(); // Convert canvas to data URL
+            // Get the current URL
+            let url = window.location.href;
+            // Use the URL API to parse the URL
+            let urlObj = new URL(url);
+            // Get the submission_id
+            let parts = urlObj.pathname.split('/');
+            let submissionId = parts[parts.length - 2];
 
-        fetch('/save_canvas_image', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
-            },
-            body: JSON.stringify({imageDataUrl: imageDataUrl})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Image uploaded successfully');
-                event.target.submit(); // Submit the form after the image is saved
-            } else {
-                console.error('Failed to upload image');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+            const imageDataUrl = canvasElement.toDataURL(); // Convert canvas to data URL
+
+            fetch('/update_canvas_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                body: JSON.stringify({ imageDataUrl: imageDataUrl, submissionId: submissionId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Image uploaded successfully');
+                        event.target.submit(); // Submit the form after the image is saved
+                    } else {
+                        console.error('Failed to upload image');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        } else {
+            alert('Please use all available colors before submitting.');
+        }
     } else {
-        alert('Please use all available colors before submitting.');
-    }
-});
-
-// Show the correct label form
-function showForm(isCorrect) {
-    var form = document.getElementById('correct_label_form');
-    if (isCorrect) {
-        form.style.display = 'none';
-    } else {
-        form.style.display = 'block';
-    }
-}
-
-document.getElementById('yes-button').addEventListener('click', function(event) {
-    const canvasElement = document.getElementById("canvas");
-    event.preventDefault(); // Prevent the button from submitting the form
-
-    if (areAllColorsUsed(canvasElement)) {
-        const imageDataUrl = canvasElement.toDataURL(); // Convert canvas to data URL
-
-        fetch('/save_canvas_image', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
-            },
-            body: JSON.stringify({imageDataUrl: imageDataUrl})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Image uploaded successfully');
-                document.getElementById('prediction-form').submit(); // Submit the form after the image is saved
-            } else {
-                console.error('Failed to upload image');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    } else {
-        alert('Please use all available colors before submitting.');
+        console.log('Canvas is blank');
     }
 });

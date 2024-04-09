@@ -3,12 +3,13 @@
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
 <div class="container">
-    <table>
+    <h2 class="h2-heading">Previous Submissions</h2>
+    <table class="submission-table">
         <thead>
             <tr>
                 <th>Image</th>
                 <th>Canvas Image</th>
-                <th>Predicted Class</th>
+                <th>Class</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -17,7 +18,7 @@
                 <tr>
                     <td><img src="{{ submission.image.url }}" class="table-image" id="original_image_{{ submission.id }}" alt="Retina photo"></td>
                     <td><img src="{{ submission.canvas_image.image.url }}" class="table-image" id="canvas_image_{{ submission.id }}" alt="Canvas image"></td>
-                    <td>{{ submission.predicted_class }}</td>
+                    <td>{{ submission.correct_label.correct_label }}</td>
                     <td>
                         <a href="{% url 'update_submission' submission.id %}">Edit/View</a>
                     </td>
@@ -25,6 +26,28 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<div class="container">
+    <h2 class="h2-heading">How to Use the Model</h2>
+    <ol>
+        <li>Download one of the sample image zip files.</li>
+        <li>Extract the zip file to get the images.</li>
+        <li>Upload an image on the "Model" page using the "Upload Image" button.</li>
+        <li>Wait for the model to process the image. This may take a few moments.</li>
+        <li>Once the image has been processed, the results will be displayed on the screen.</li>
+        <li>You can view the original image, the importance image, and the model's prediction.</li>
+        <li>If the important region is incorrect, simply select a color and draw on top of the image to show the correct region</li>
+        <li>If you want to try another image, simply repeat the process.</li>
+    </ol>
+</div>
+
+<div class="container">
+    <h2 class="h2-heading">Sample Images</h2>
+    <p>Click on a link to download a zip file:</p>
+    <a href="/path/to/sample1.zip" download="sample1.zip">Download Sample 1</a>
+    <a href="/path/to/sample2.zip" download="sample2.zip">Download Sample 2</a>
+    <!-- Add more links as needed -->
 </div>
     <!-- <h2 class="center-text h2-heading">Predicted Severity: {{ submission.predicted_label }}</h2>
         <div class="image-container" data-submission-id="{{ submission.id }}">

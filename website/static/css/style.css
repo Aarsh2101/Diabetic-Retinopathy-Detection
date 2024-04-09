@@ -31,3 +31,12 @@ label {
 .center-text {
     text-align: center;
 }
+
+.profile-picture {
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.profile-dropdown {
+    text-align: center;
+}

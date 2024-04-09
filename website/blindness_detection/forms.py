@@ -11,8 +11,7 @@ class RetinaPhotoForm(forms.ModelForm):
 class CorrectLabelForm(forms.ModelForm):
     class Meta:
         model = CorrectLabel
-        fields = ['correct_label', 'image_name']
+        fields = ['correct_label']
         widgets = {
-            'correct_label': forms.RadioSelect,
-            'image_name': forms.HiddenInput() 
+            'correct_label': forms.RadioSelect
         }

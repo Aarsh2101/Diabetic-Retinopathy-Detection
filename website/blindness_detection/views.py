@@ -21,6 +21,8 @@ def pil_image_to_django_file(pil_image, image_name):
 # Create your views here.
 
 def index(request):
+    zip_file = ZipFile()
+    zip_file.save()
     return render(request, 'index.html')
 
 @login_required(login_url='/login/')
@@ -69,17 +71,22 @@ def predict(request):
 
 def correct_prediction(request):
     if request.method == 'POST':
-        post_data = request.POST.copy()  # Make a mutable copy
-        post_data['image_name'] = request.session.get('img_name', 'default.png')  # Add image_name
-        form = CorrectLabelForm(post_data)  # Use the modified POST data
+        correct_label_form = CorrectLabelForm(request.POST)
+        img_name = request.session.get('img_name', 'default.png')
+        retina_photo = RetinaPhoto.objects.get(image = 'retina_images/'+ img_name )
+        correct_label_form.instance.retina_photo = retina_photo
+        # correct_label.instance.retina_photo = request.session.get('img_name', 'default.png')
+        # post_data = request.POST.copy()  # Make a mutable copy
+        # post_data['image_name'] = request.session.get('img_name', 'default.png')  # Add image_name
+        # form = CorrectLabelForm(post_data)  # Use the modified POST data
 
-        if form.is_valid():
-            form.save()
+        if correct_label_form.is_valid():
+            correct_label_form.save()
+            return redirect('predict')
     else:
         form = CorrectLabelForm()
-        context = {'form': form}
-    return redirect('predict')
-
+        return redirect('/')
+    
 
 def save_canvas_image(request):
     
@@ -139,8 +146,39 @@ def dashboard(request):
 
 def update_submission(request, submission_id):
     submission = get_object_or_404(RetinaPhoto, pk=submission_id)
-    context = {
-        'text': 'get',
-        'image_url': submission.image.url
-    }
-    return render(request, 'update_submission.html', context)
+    
+    if request.method == 'POST':
+        correct_label_form = CorrectLabelForm(request.POST, instance=submission.correct_label)
+        if correct_label_form.is_valid():
+            correct_label_form.save()
+            return redirect('dashboard')
+
+    else:
+        correct_label_form = CorrectLabelForm()
+        context = {
+            'text': 'get',
+            'retina_url': submission.image.url,
+            'gradcam_url': submission.gradcam_image.image.url,
+            'correct_label': submission.correct_label.correct_label,
+            'correct_label_form': correct_label_form,
+        }
+        return render(request, 'update_submission.html', context)
+
+def update_canvas_image(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        image_data_url = data['imageDataUrl']
+        submission_id = data['submissionId']
+        retina_photo = get_object_or_404(RetinaPhoto, pk=submission_id)
+        format, imgstr = image_data_url.split(';base64,') 
+        ext = format.split('/')[-1] 
+        img_name = retina_photo.image.name.split('/')[-1]
+        data = ContentFile(base64.b64decode(imgstr), name=img_name)
+        
+        canvas_image = CanvasImage.objects.get(retina_photo=retina_photo)
+        canvas_image.image = data
+        canvas_image.save()
+        
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
+

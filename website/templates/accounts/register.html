@@ -4,7 +4,7 @@
 {% block content %}
 
 <h2 class="center-text h2-heading">Register</h2>
-<form method="post" class="center-form">
+<form method="POST" enctype="multipart/form-data" class="center-form">
     {% csrf_token %}
     {% for field in form %}
     <div class="form-group">

@@ -19,14 +19,14 @@
 					<nav id="nav">
 						<ul>
 							<li><a href="{% url 'index' %}">Home</a></li>
-							<li><a href="{% url 'predict' %}">Model</a></li>
 							<li><a href="{% url 'team' %}">Team</a></li>
 							{% if user.is_authenticated %}
 								<!-- User is logged in, so don't show the login and register buttons -->
 								<!-- <li><a href="{% url 'dashboard' %}">Dashboard</a></li> -->
 								<li class="opener">
-									<img src="{{ user.profile_picture.url }}" class="profile-picture" alt="Profile Picture" style="width: 30px; height: 30px;">
+									<img src="{{ user.profile_picture.url }}" class="profile-picture" alt="Profile Picture">
 									<ul>
+										<li><a href="{% url 'predict' %}">Model</a></li>
 										<li><a href="{% url 'dashboard' %}">Dashboard</a></li>
 										<li><a href="{% url 'logout' %}" class="button primary">Log out</a></li>
 										<!-- Add more options here if needed -->

@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from .forms import RetinaPhotoForm, CorrectLabelForm
 from .models import *
+from accounts.models import *
 from .DDRpredict import get_predicted_label_and_gradcam
 import numpy as np
 from PIL import Image
@@ -21,8 +22,6 @@ def pil_image_to_django_file(pil_image, image_name):
 # Create your views here.
 
 def index(request):
-    zip_file = ZipFile()
-    zip_file.save()
     return render(request, 'index.html')
 
 @login_required(login_url='/login/')
@@ -139,8 +138,15 @@ def team(request):
 @login_required(login_url='/login/')
 def dashboard(request):
     submissions = RetinaPhoto.objects.filter(user=request.user)
+    from django.core.exceptions import ObjectDoesNotExist
+    try:
+        sample_images = ZipFile.objects.get(user=request.user)
+    except ZipFile.DoesNotExist:
+        sample_images = None
+        
     context = {
-        'submissions': submissions
+        'submissions': submissions,
+        'sample_images': sample_images,
     }
     return render(request, 'dashboard.html', context)
 

@@ -35,8 +35,14 @@ label {
 .profile-picture {
     border-radius: 50%;
     vertical-align: middle;
+    width: 30px;
+    height: 30px;
 }
 
 .profile-dropdown {
     text-align: center;
+}
+
+.dropotron {
+    text-align: center; /* Center the text inside dropdown*/
 }

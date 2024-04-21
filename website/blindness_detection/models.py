@@ -32,11 +32,3 @@ class CorrectLabel(models.Model):
     ]
     correct_label = models.CharField(max_length=100, choices=LABEL_CHOICES, default='No DR')
     retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='correct_label')
-
-class ZipFile(models.Model):
-    # name = models.CharField(max_length=100, null=True, blank=True)
-    file = models.FileField(upload_to='zip_files/', null=True, blank=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
-
-    # def __str__(self):
-    #     return self.file.name

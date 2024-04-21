@@ -42,13 +42,13 @@
     </ol>
 </div>
 
+{% if sample_images %}
 <div class="container">
     <h2 class="h2-heading">Sample Images</h2>
     <p>Click on a link to download a zip file:</p>
-    <a href="/path/to/sample1.zip" download="sample1.zip">Download Sample 1</a>
-    <a href="/path/to/sample2.zip" download="sample2.zip">Download Sample 2</a>
-    <!-- Add more links as needed -->
+    <a class="button primary" href="{{ sample_images.file.url }}" download>Download Your Zip File</a>
 </div>
+{% endif %}
     <!-- <h2 class="center-text h2-heading">Predicted Severity: {{ submission.predicted_label }}</h2>
         <div class="image-container" data-submission-id="{{ submission.id }}">
             <img src="{{ submission.image.url }}" class="original_image" id="original_image_{{ submission.id }}" alt="Retina photo">

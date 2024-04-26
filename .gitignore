@@ -1,5 +1,4 @@
 .venv
 .DS_Store
 website/media
-website/staticfiles
 DDR-dataset

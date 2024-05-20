@@ -4,13 +4,28 @@
     <div class="container">
         <section>
             <header class="major">
-                <h2 class="h2-heading">Blindness Detection</h2>
+                <h2 class="h2-heading">Diabetic Retinopathy Severity Detection</h2>
             </header>
+            <div class="container">
+                <h2 class="h2-heading">How to Use the Model</h2>
+                <ol>
+                    <li>Download one of the sample image zip files.</li>
+                    <li>Extract the zip file to get the images.</li>
+                    <li>Upload an image on the "Model" page using the "Upload Image" button.</li>
+                    <li>Wait for the model to process the image. This may take a few moments.</li>
+                    <li>Once the image has been processed, the results will be displayed on the screen.</li>
+                    <li>You can view the original image, the importance image, and the model's prediction.</li>
+                    <li>If the important region is incorrect, simply select a color and draw on top of the image to show the correct region</li>
+                    <li>If you want to try another image, simply repeat the process.</li>
+                </ol>
+            </div>
+            <a href="{{ sample_img_zip }}" download class="button primary">Download Sample Images</a>
+
             <form action="predict" method="POST" enctype="multipart/form-data" style="margin-top: 2em;">
                 {% csrf_token %}
                 <div class="row gtr-uniform gtr-50">
                     <div class="col-12">
-                        <h3>Select a retine photo</h3>
+                        <h3>Upload a Fundus Image</h3>
                         {{ form }}
                     </div>
                     <div class="col-12">

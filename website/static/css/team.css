@@ -17,3 +17,7 @@ h2 {
 .center-text {
     text-align: center;
 }
+
+.name {
+    margin: 0px;
+}

@@ -164,3 +164,13 @@ input[type=range]::-moz-range-thumb {
 #prediction-form label {
     margin: 0 0 10px;
 }
+
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.color-radio {
+    color: white;
+}

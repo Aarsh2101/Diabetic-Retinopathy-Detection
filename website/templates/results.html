@@ -3,87 +3,90 @@
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/results.css' %}">
 <div class="container">
-    <h2 class="center-text h2-heading">Predicted Severity: {{predicted_label}}</h2>
-
-    <div class="content">
-        <!-- images -->
-        <div class="image-container">
-            <img src="{{cropped_img_path}}" id="original_image" alt="Original Image">
-            <img src="{{retina_gradcam_img_path}}" id="shap_image" alt="GradCAM Image">
-            <canvas id="grid-canvas"></canvas>
-            <canvas id="canvas"></canvas>
-        </div>
-        <!-- legend -->
-        <div class="legend-container">
-            <div class="legend"></div>
-            <div class="legend-labels">
-                {% for value in legend_values %}
-                <span>{{ value }}</span>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <div class="slider-container">
-        <!-- transparency slider -->
-        <div class="transparency-slider">
-            <label for="transparency">Transparency of importance image: </label>
-            <input type="range" id="transparency" name="transparency" min="0" max="1" step="0.1" value="1">
-        </div>
-        <!-- block size slider -->
-        <div class="size-slider">
-            <label for="blockSize">Block size: </label>
-            <input type="range" id="blockSize" name="blockSize" min="10" max="70" step="1" value="25">
-        </div>
-    </div>
-
-    <!-- color radio buttons -->
-    <div class="color-radio">
-        <div>Color: </div>
-        <label>
-            <input type="radio" name="colorRadio" value="#218ae5" checked hidden/>
-            <span style="background: #218ae5;"></span>
-        </label>
-        <!-- <label>
-            <input type="radio" name="colorRadio" value="#ACD3F5" hidden/>
-            <span style="background: #ACD3F5;"></span>
-        </label> -->
-        <label>
-            <input type="radio" name="colorRadio" value="#ffffff" hidden/>
-            <span style="background: #ffffff;"></span>
-        </label>
-        <!-- <label>
-            <input type="radio" name="colorRadio" value="#FFA5C0" hidden/>
-            <span style="background: #FFA5C0;"></span>
-        </label> -->
-        <label>
-            <input type="radio" name="colorRadio" value="#ff1d62" hidden/>
-            <span style="background: #ff1d62;"></span>
-        </label>
-    </div>
-
-    <hr>
-    <div class="center-content">
-        <label>Is the prediction correct?</label>
-        <div id="prediction-buttons">
-            <button id="yes-button" class="button primary">Yes</button>
-            <button onclick="showForm(false)" class="button">No</button>
-        </div>
-    
-        <div id="correct_label_form" style="display: none;">
-            <h3>Correct Prediction</h3>
-            <form id="prediction-form" class="center-content"  action="correct_prediction" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {% for field in correct_label_form %}
-                    <div class="col-4 col-12-medium">
-                        {% for choice in field.field.choices %}
-                            <input type="radio" id="{{ field.auto_id }}_{{ forloop.counter }}" name="{{ field.html_name }}" value="{{ choice.0 }}" {% if choice.0 == predicted_label %}checked{% endif %}>
-                            <label for="{{ field.auto_id }}_{{ forloop.counter }}">{{ choice.1 }}</label>
+    <div class="flex-container">
+        <div class="flex-item">
+            <h2 class="center-text h2-heading">Predicted Severity: {{predicted_label}}</h2>
+            <div class="content">
+                <!-- images -->
+                <div class="image-container">
+                    <img src="{{cropped_img_path}}" id="original_image" alt="Original Image">
+                    <img src="{{retina_gradcam_img_path}}" id="shap_image" alt="GradCAM Image">
+                    <canvas id="grid-canvas"></canvas>
+                    <canvas id="canvas"></canvas>
+                </div>
+                <!-- legend -->
+                <div class="legend-container">
+                    <div class="legend"></div>
+                    <div class="legend-labels">
+                        {% for value in legend_values %}
+                        <span>{{ value }}</span>
                         {% endfor %}
                     </div>
-                {% endfor %}
-                <input type="submit" value="Submit">
-            </form>
+                </div>
+            </div>
+        
+            <div class="slider-container">
+                <!-- transparency slider -->
+                <div class="transparency-slider">
+                    <label for="transparency">Transparency of importance image: </label>
+                    <input type="range" id="transparency" name="transparency" min="0" max="1" step="0.1" value="1">
+                </div>
+                <!-- block size slider -->
+                <div class="size-slider">
+                    <label for="blockSize">Block size: </label>
+                    <input type="range" id="blockSize" name="blockSize" min="10" max="70" step="1" value="25">
+                </div>
+            </div>
+        
+            <!-- color radio buttons -->
+            <div class="color-radio">
+                <div>Color: </div>
+                <label>
+                    <input type="radio" name="colorRadio" value="#218ae5" checked hidden/>
+                    <span style="background: #218ae5;"></span>
+                </label>
+                <!-- <label>
+                    <input type="radio" name="colorRadio" value="#ACD3F5" hidden/>
+                    <span style="background: #ACD3F5;"></span>
+                </label> -->
+                <label>
+                    <input type="radio" name="colorRadio" value="#ffffff" hidden/>
+                    <span style="background: #ffffff;"></span>
+                </label>
+                <!-- <label>
+                    <input type="radio" name="colorRadio" value="#FFA5C0" hidden/>
+                    <span style="background: #FFA5C0;"></span>
+                </label> -->
+                <label>
+                    <input type="radio" name="colorRadio" value="#ff1d62" hidden/>
+                    <span style="background: #ff1d62;"></span>
+                </label>
+            </div>
+        </div>
+        <div class="flex-item">
+            <div class="center-content">
+                <label>Is the prediction correct?</label>
+                <div id="prediction-buttons">
+                    <button id="yes-button" class="button primary">Yes</button>
+                    <button onclick="showForm(false)" class="button">No</button>
+                </div>
+            
+                <div id="correct_label_form" style="display: none;">
+                    <h3>Correct Prediction</h3>
+                    <form id="prediction-form" class="center-content"  action="correct_prediction" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in correct_label_form %}
+                            <div class="col-4 col-12-medium">
+                                {% for choice in field.field.choices %}
+                                    <input type="radio" id="{{ field.auto_id }}_{{ forloop.counter }}" name="{{ field.html_name }}" value="{{ choice.0 }}" {% if choice.0 == predicted_label %}checked{% endif %}>
+                                    <label for="{{ field.auto_id }}_{{ forloop.counter }}">{{ choice.1 }}</label>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <input type="submit" value="Submit">
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

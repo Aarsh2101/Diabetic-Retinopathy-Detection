@@ -11,7 +11,7 @@
         {% for member in lead_team %}
         <div class="col-4 col-12-medium">
             <span class="image fit"><img class="team-image" src="{% static 'images/team/'|add:member.img %}" alt="{{ member.name }}" /></span>
-            <h3 class="center-text">{{ member.name }}</h3>
+            <h3 class="name center-text">{{ member.name }}</h3>
             <p class="center-text">{{ member.description }}</p>
         </div>
         {% endfor %}
@@ -26,7 +26,7 @@
         {% for member in research_team %}
         <div class="col-4 col-12-medium">
             <span class="image fit"><img class="team-image" src="{% static 'images/team/'|add:member.img %}" alt="{{ member.name }}" /></span>
-            <h3 class="center-text">{{ member.name }}</h3>
+            <h3 class="name center-text">{{ member.name }}</h3>
             <p class="center-text">{{ member.description }}</p>
         </div>
         {% endfor %}

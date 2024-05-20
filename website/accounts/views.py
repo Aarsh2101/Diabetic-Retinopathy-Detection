@@ -18,7 +18,7 @@ def register(request):
             # Create a new ZipFile object for the user
             zip_file = ZipFile.objects.create(user=user)
             login(request, user)
-            return redirect('index')
+            return redirect('predict')
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})
@@ -29,7 +29,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('index')
+            return redirect('predict')
     else:
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})

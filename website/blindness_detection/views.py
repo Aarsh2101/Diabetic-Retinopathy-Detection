@@ -41,7 +41,7 @@ def predict(request):
             cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
 
             cropped_image, predicted_label, gradcam_image, legend_range = get_predicted_label_and_gradcam(img)
-            labels = ['No DR', 'Mild DR', 'Moderate DR', 'Severe DR', 'Proliferative DR']
+            labels = ['No Diabetic Retinopathy', 'Mild Diabetic Retinopathy', 'Moderate Diabetic Retinopathy', 'Severe Diabetic Retinopathy', 'Proliferative Diabetic Retinopathy']
 
             legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
             
@@ -63,8 +63,10 @@ def predict(request):
             return render(request, 'results.html', context)
     else:
         form = RetinaPhotoForm()
+        sample_img_zip = ZipFile.objects.filter(user=request.user).first()
         context = {
             'form': form,
+            'sample_img_zip': sample_img_zip.file.url,
             }
     return render(request, 'predict.html', context)
 
@@ -109,28 +111,28 @@ def team(request):
     context = {
         'lead_team': [{
                 'name': 'Anuj Tiwari',
-                'description': 'Full Stack Developer',
+                'description': 'Senior Research Associate',
                 'img': 'anuj.jpeg'
         },
         {
                 'name': 'Aarsh Patel',
                 'description': 'Machine Learning Engineer',
-                'img': 'aarsh.jpg'
+                'img': 'aarsh.jpeg'
         }],
         'research_team': [{
                 'name': 'John Doe',
                 'description': 'Machine Learning Engineer',
-                'img': 'john-doe.jpeg'
+                'img': 'default-profile.svg'
         },
         {
                 'name': 'John Doe',
                 'description': 'Machine Learning Engineer',
-                'img': 'john-doe.jpeg'
+                'img': 'default-profile.svg'
         },
         {
                 'name': 'John Doe',
                 'description': 'Machine Learning Engineer',
-                'img': 'john-doe.jpeg'
+                'img': 'default-profile.svg'
         },]
     }
     return render(request, 'team.html', context)

@@ -215,7 +215,7 @@ document.getElementById("prediction-form").addEventListener("submit", function(e
     }
 });
 
-// Show the correct label form
+// Show the correct label form if the prediction is incorrect
 function showForm(isCorrect) {
     var form = document.getElementById('correct_label_form');
     if (isCorrect) {
@@ -225,34 +225,31 @@ function showForm(isCorrect) {
     }
 }
 
+// If the prediction is correct
 document.getElementById('yes-button').addEventListener('click', function(event) {
-    const canvasElement = document.getElementById("canvas");
     event.preventDefault(); // Prevent the button from submitting the form
 
-    if (areAllColorsUsed(canvasElement)) {
-        const imageDataUrl = canvasElement.toDataURL(); // Convert canvas to data URL
+    const canvasElement = document.getElementById("canvas");
+    const imageDataUrl = canvasElement.toDataURL(); // Convert canvas to data URL
 
-        fetch('/save_canvas_image', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
-            },
-            body: JSON.stringify({imageDataUrl: imageDataUrl})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Image uploaded successfully');
-                document.getElementById('prediction-form').submit(); // Submit the form after the image is saved
-            } else {
-                console.error('Failed to upload image');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    } else {
-        alert('Please use all available colors before submitting.');
-    }
+    fetch('/save_canvas_image', { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+        },
+        body: JSON.stringify({imageDataUrl: imageDataUrl})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Image uploaded successfully');
+            document.getElementById('prediction-form').submit(); // Submit the form after the image is saved
+        } else {
+            console.error('Failed to upload image');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 });

@@ -23,12 +23,12 @@ class CanvasImage(models.Model):
 
 class CorrectLabel(models.Model):
     LABEL_CHOICES = [
-        ('No DR', 'No DR'),
-        ('Mild DR', 'Mild DR'),
-        ('Moderate DR', 'Moderate DR'),
-        ('Severe DR', 'Severe DR'),
-        ('Proliferative DR', 'Proliferative DR'),
+        ('No Diabetic Retinopathy', 'No Diabetic Retinopathy'),
+        ('Mild Diabetic Retinopathy', 'Mild Diabetic Retinopathy'),
+        ('Moderate Diabetic Retinopathy', 'Moderate Diabetic Retinopathy'),
+        ('Severe Diabetic Retinopathy', 'Severe Diabetic Retinopathy'),
+        ('Proliferative Diabetic Retinopathy', 'Proliferative Diabetic Retinopathy'),
         # Add more choices as needed
     ]
-    correct_label = models.CharField(max_length=100, choices=LABEL_CHOICES, default='No DR')
+    correct_label = models.CharField(max_length=100, choices=LABEL_CHOICES, default='No Diabetic Retinopathy')
     retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='correct_label')

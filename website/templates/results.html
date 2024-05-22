@@ -3,9 +3,26 @@
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/results.css' %}">
 <div class="container">
+    <div class="section-1">
+        <div>
+            <h3 class="image-title">Uploaded Image</h3>
+            <img src="{{cropped_img_path}}" id="uploaded_image">
+        </div>
+        <div>
+            <h3 class="image-title">Importance Image</h3>
+            <img src="{{retina_gradcam_img_path}}" id="importance_image">
+        </div>
+        <div class="prediction">
+            <h2>
+                <div class="severity-text">Predicted Severity:</div> 
+                <div class="label-text">{{predicted_label}}</div>
+            </h2>
+            <p class="description"> {{description}}</p>
+        </div>
+    </div>
+    <hr>
     <div class="flex-container">
         <div class="flex-item">
-            <h2 class="center-text h2-heading">Predicted Severity: {{predicted_label}}</h2>
             <div class="content">
                 <!-- images -->
                 <div class="image-container">
@@ -31,48 +48,48 @@
                     <label for="transparency">Transparency of importance image: </label>
                     <input type="range" id="transparency" name="transparency" min="0" max="1" step="0.1" value="1">
                 </div>
-                <!-- block size slider -->
-                <div class="size-slider">
-                    <label for="blockSize">Block size: </label>
-                    <input type="range" id="blockSize" name="blockSize" min="10" max="70" step="1" value="25">
-                </div>
             </div>
         
-            <!-- color radio buttons -->
-            <div class="color-radio">
-                <div>Color: </div>
-                <label>
-                    <input type="radio" name="colorRadio" value="#218ae5" checked hidden/>
-                    <span style="background: #218ae5;"></span>
-                </label>
-                <!-- <label>
-                    <input type="radio" name="colorRadio" value="#ACD3F5" hidden/>
-                    <span style="background: #ACD3F5;"></span>
-                </label> -->
-                <label>
-                    <input type="radio" name="colorRadio" value="#ffffff" hidden/>
-                    <span style="background: #ffffff;"></span>
-                </label>
-                <!-- <label>
-                    <input type="radio" name="colorRadio" value="#FFA5C0" hidden/>
-                    <span style="background: #FFA5C0;"></span>
-                </label> -->
-                <label>
-                    <input type="radio" name="colorRadio" value="#ff1d62" hidden/>
-                    <span style="background: #ff1d62;"></span>
-                </label>
-            </div>
+            
         </div>
         <div class="flex-item">
             <div class="center-content">
                 <label>Is the prediction correct?</label>
                 <div id="prediction-buttons">
                     <button id="yes-button" class="button primary">Yes</button>
-                    <button onclick="showForm(false)" class="button">No</button>
+                    <button onclick="showForm(true)" class="button">No</button>
                 </div>
-            
+                <!-- block size slider -->
+                <div class="size-slider" style="display: none;">
+                    <label for="blockSize">Block size: </label>
+                    <input type="range" id="blockSize" name="blockSize" min="10" max="70" step="1" value="25">
+                </div>
+                <!-- color radio buttons -->
+                <div class="color-radio" style="display: none;">
+                    <div>Color: </div>
+                    <label>
+                        <input type="radio" name="colorRadio" value="#218ae5" checked hidden/>
+                        <span style="background: #218ae5;"></span>
+                    </label>
+                    <!-- <label>
+                        <input type="radio" name="colorRadio" value="#ACD3F5" hidden/>
+                        <span style="background: #ACD3F5;"></span>
+                    </label> -->
+                    <label>
+                        <input type="radio" name="colorRadio" value="#ffffff" hidden/>
+                        <span style="background: #ffffff;"></span>
+                    </label>
+                    <!-- <label>
+                        <input type="radio" name="colorRadio" value="#FFA5C0" hidden/>
+                        <span style="background: #FFA5C0;"></span>
+                    </label> -->
+                    <label>
+                        <input type="radio" name="colorRadio" value="#ff1d62" hidden/>
+                        <span style="background: #ff1d62;"></span>
+                    </label>
+                </div>
                 <div id="correct_label_form" style="display: none;">
-                    <h3>Correct Prediction</h3>
+                    <h3>Correct Severity</h3>
                     <form id="prediction-form" class="center-content"  action="correct_prediction" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% for field in correct_label_form %}

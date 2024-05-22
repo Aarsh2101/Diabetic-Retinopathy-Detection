@@ -216,12 +216,18 @@ document.getElementById("prediction-form").addEventListener("submit", function(e
 });
 
 // Show the correct label form if the prediction is incorrect
-function showForm(isCorrect) {
+function showForm(show) {
     var form = document.getElementById('correct_label_form');
-    if (isCorrect) {
-        form.style.display = 'none';
-    } else {
+    var sizeSlider = document.getElementsByClassName('size-slider')[0];
+    var colorRadio = document.getElementsByClassName('color-radio')[0];
+    if (show) {
         form.style.display = 'block';
+        sizeSlider.style.display = 'flex';
+        colorRadio.style.display = 'flex';
+    } else {
+        form.style.display = 'none';
+        sizeSlider.style.display = 'none';
+        colorRadio.style.display = 'none';
     }
 }
 

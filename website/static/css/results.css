@@ -135,6 +135,7 @@ input[type=range]::-moz-range-thumb {
 .transparency-slider, .size-slider {
     display: flex;
     align-items: center;
+    margin: 20px;
 }
 
 .center-content {
@@ -154,7 +155,7 @@ input[type=range]::-moz-range-thumb {
 
 #correct_label_form h3 {
     margin: 0 0 10px;
-    text-align: center;
+    /* text-align: center; */
 }
 
 .radio-button {
@@ -165,12 +166,54 @@ input[type=range]::-moz-range-thumb {
     margin: 0 0 10px;
 }
 
+.section-1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0px;
+}
+
+.section-1 div {
+    width: 100%;
+    text-align: center;
+}
+
+.image-title {
+    text-align: center;
+}
+
+#uploaded_image, #importance_image {
+    width: 300px;
+    height: 300px;
+}
+
 .flex-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
+.flex-item {
+    width: 50%;
+}
+
+.prediction .description {
+    text-align: justify;
+}
+
+.prediction h2 {
+    margin: 0;
+}
+
+.label-text {
+    font-size: 25px;
+}
+
 .color-radio {
     color: white;
+    margin: 20px;
+}
+
+input[name="correct_label"] + label {
+    display: block;
 }

@@ -41,8 +41,17 @@ def predict(request):
             cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
 
             cropped_image, predicted_label, gradcam_image, legend_range = get_predicted_label_and_gradcam(img)
+            
             labels = ['No Diabetic Retinopathy', 'Mild Diabetic Retinopathy', 'Moderate Diabetic Retinopathy', 'Severe Diabetic Retinopathy', 'Proliferative Diabetic Retinopathy']
-
+            
+            description = {
+                0: 'The retina shows no signs of diabetic retinopathy. This indicates healthy retinal vessels without any damage due to diabetes. Regular monitoring is recommended to maintain eye health.',
+                1: 'Early signs of diabetic retinopathy are present, characterized by small areas of swelling in the blood vessels of the retina. This stage generally does not affect vision but requires regular eye exams to monitor progression.',
+                2: 'There are more noticeable changes in the retina, including blocked blood vessels that prevent proper blood flow. Vision may begin to be affected, and more frequent monitoring and management of diabetes are necessary to prevent further progression.',
+                3: 'A significant portion of the blood vessels in the retina are blocked, leading to areas of the retina not receiving enough blood. This stage carries a higher risk of progressing to proliferative diabetic retinopathy, requiring closer medical supervision and possibly treatment.',
+                4: 'The most advanced stage, where new, abnormal blood vessels begin to grow in the retina and vitreous. These vessels can bleed and cause severe vision loss or blindness. Immediate medical treatment is essential to manage and prevent further complications.'
+                }
+            
             legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
             
             gradcam_image_django = pil_image_to_django_file(gradcam_image, img_name)
@@ -54,6 +63,7 @@ def predict(request):
             correct_label_form = CorrectLabelForm()
             context = {
                 'predicted_label': labels[predicted_label],
+                'description': description[predicted_label],
                 'cropped_img_path': cropped_img_path,
                 'retina_img_path': form.instance.image.url,
                 'retina_gradcam_img_path': gradcam_image.image.url,
@@ -63,7 +73,7 @@ def predict(request):
             return render(request, 'results.html', context)
     else:
         form = RetinaPhotoForm()
-        sample_img_zip = ZipFile.objects.filter(user=request.user).first()
+        sample_img_zip = ZipFile.objects.get(user=request.user)
         context = {
             'form': form,
             'sample_img_zip': sample_img_zip.file.url,
@@ -140,15 +150,9 @@ def team(request):
 @login_required(login_url='/login/')
 def dashboard(request):
     submissions = RetinaPhoto.objects.filter(user=request.user)
-    from django.core.exceptions import ObjectDoesNotExist
-    try:
-        sample_images = ZipFile.objects.get(user=request.user)
-    except ZipFile.DoesNotExist:
-        sample_images = None
         
     context = {
         'submissions': submissions,
-        'sample_images': sample_images,
     }
     return render(request, 'dashboard.html', context)
 

@@ -32,3 +32,8 @@ class CorrectLabel(models.Model):
     ]
     correct_label = models.CharField(max_length=100, choices=LABEL_CHOICES, default='No Diabetic Retinopathy')
     retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='correct_label')
+
+class Report(models.Model):
+    file = models.FileField(upload_to='reports/')
+    retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='report')
+    created_at = models.DateTimeField(auto_now_add=True)

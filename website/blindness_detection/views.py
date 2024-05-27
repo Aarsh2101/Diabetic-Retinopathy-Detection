@@ -1,16 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.files import File
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from .forms import RetinaPhotoForm, CorrectLabelForm
 from .models import *
 from accounts.models import *
 from .DDRpredict import get_predicted_label_and_gradcam
+from .report import generate_report
 import numpy as np
 from PIL import Image
 import os, json, base64
 from io import BytesIO
+from datetime import datetime
 
 
 def pil_image_to_django_file(pil_image, image_name):
@@ -18,6 +21,13 @@ def pil_image_to_django_file(pil_image, image_name):
     pil_image.save(byte_arr, format='PNG')
     return ContentFile(byte_arr.getvalue(), name=image_name)
 
+def image_file_path_to_base64_string(filepath: str) -> str:
+  '''
+  Takes a filepath and converts the image saved there to its base64 encoding,
+  then decodes that into a string.
+  '''
+  with open(filepath, 'rb') as f:
+    return base64.b64encode(f.read()).decode()
 
 # Create your views here.
 
@@ -52,6 +62,22 @@ def predict(request):
                 4: 'The most advanced stage, where new, abnormal blood vessels begin to grow in the retina and vitreous. These vessels can bleed and cause severe vision loss or blindness. Immediate medical treatment is essential to manage and prevent further complications.'
                 }
             
+            repeat_exam = {
+                0: '2 Years',
+                1: '1 Year',
+                2: '6 Months',
+                3: '3 Month',
+                4: '1 Month'
+            }
+
+            referral = {
+                0: 'Not Required',
+                1: 'Not Required',
+                2: 'Required',
+                3: 'Required',
+                4: 'Required'
+            }
+
             legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
             
             gradcam_image_django = pil_image_to_django_file(gradcam_image, img_name)
@@ -59,6 +85,17 @@ def predict(request):
             gradcam_image.save()
             # gradcam_image.save(retina_gradcam_img_path[1:])
             cropped_image.save(cropped_img_path[1:])
+
+            # REPORT GENERATION
+            date = datetime.now().date().strftime('%m-%d-%Y')
+            uploaded_img_str = image_file_path_to_base64_string(cropped_img_path[1:])
+            gradcam_img_str = image_file_path_to_base64_string(gradcam_image.image.url[1:])
+            report = generate_report(date=date, prediction=labels[predicted_label], description=description[predicted_label], uploaded_image=uploaded_img_str, importance_image=gradcam_img_str)
+            report_io = BytesIO()
+            report_io.write(report)
+            report_io.seek(0)
+            report = Report(file=File(report_io, name='report.pdf'), retina_photo=form.instance)
+            report.save()
 
             correct_label_form = CorrectLabelForm()
             context = {

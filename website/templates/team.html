@@ -12,7 +12,8 @@
         <div class="col-4 col-12-medium">
             <span class="image fit"><img class="team-image" src="{% static 'images/team/'|add:member.img %}" alt="{{ member.name }}" /></span>
             <h3 class="name center-text">{{ member.name }}</h3>
-            <p class="center-text">{{ member.description }}</p>
+            <p class="description center-text">{{ member.description }}</p>
+            <p class="affiliation center-text">{{ member.affiliation }}</p>
         </div>
         {% endfor %}
     </div>
@@ -27,7 +28,8 @@
         <div class="col-4 col-12-medium">
             <span class="image fit"><img class="team-image" src="{% static 'images/team/'|add:member.img %}" alt="{{ member.name }}" /></span>
             <h3 class="name center-text">{{ member.name }}</h3>
-            <p class="center-text">{{ member.description }}</p>
+            <p class="description center-text">{{ member.description }}</p>
+            <p class="affiliation center-text">{{ member.affiliation }}</p>
         </div>
         {% endfor %}
     </div>

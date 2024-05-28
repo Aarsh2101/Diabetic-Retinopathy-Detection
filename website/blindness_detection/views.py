@@ -55,28 +55,13 @@ def predict(request):
             labels = ['No Diabetic Retinopathy', 'Mild Diabetic Retinopathy', 'Moderate Diabetic Retinopathy', 'Severe Diabetic Retinopathy', 'Proliferative Diabetic Retinopathy']
             
             description = {
-                0: 'The retina shows no signs of diabetic retinopathy. This indicates healthy retinal vessels without any damage due to diabetes. Regular monitoring is recommended to maintain eye health.',
-                1: 'Early signs of diabetic retinopathy are present, characterized by small areas of swelling in the blood vessels of the retina. This stage generally does not affect vision but requires regular eye exams to monitor progression.',
-                2: 'There are more noticeable changes in the retina, including blocked blood vessels that prevent proper blood flow. Vision may begin to be affected, and more frequent monitoring and management of diabetes are necessary to prevent further progression.',
-                3: 'A significant portion of the blood vessels in the retina are blocked, leading to areas of the retina not receiving enough blood. This stage carries a higher risk of progressing to proliferative diabetic retinopathy, requiring closer medical supervision and possibly treatment.',
-                4: 'The most advanced stage, where new, abnormal blood vessels begin to grow in the retina and vitreous. These vessels can bleed and cause severe vision loss or blindness. Immediate medical treatment is essential to manage and prevent further complications.'
+                0: 'The retina is completely clear of any signs of diabetic retinopathy, indicating that the retinal vessels are healthy and undamaged by diabetes. This is an optimal outcome, and maintaining regular monitoring is recommended to ensure that the retina remains healthy. Lifestyle modifications and managing blood sugar levels are advised to continue preventing the onset of retinopathy.',
+                1: '''Early signs of diabetic retinopathy are evident, characterized by microaneurysms — small areas of swelling in the blood vessels of the retina. At this stage, there typically aren't noticeable symptoms affecting vision, but it's crucial to monitor the condition closely. Yearly eye exams are recommended to track any changes and manage diabetes effectively to halt the progression.''',
+                2: 'This stage shows moderate non-proliferative diabetic retinopathy with more pronounced changes, such as blocked blood vessels that can affect retinal nourishment. Patients might start experiencing slight vision issues. It is critical at this stage to manage diabetes rigorously and consult with an eye care professional every six months to monitor the condition closely and discuss potential interventions.',
+                3: 'Marked by severe non-proliferative diabetic retinopathy, a significant number of retinal blood vessels are now blocked, severely reducing blood flow to various parts of the retina. This condition can lead to complications like DME (Diabetic Macular Edema). Close and immediate medical supervision is necessary, with treatment options evaluated to prevent the disease from advancing to the proliferative stage.',
+                4: 'This is the proliferative stage of diabetic retinopathy, the most severe form, where new and abnormal blood vessels begin to develop on the retina and into the vitreous gel. These vessels are fragile and prone to bleeding, significantly threatening vision and potentially leading to retinal detachment or blindness. Immediate and aggressive medical treatment is essential to manage this stage and preserve as much vision as possible.'
                 }
             
-            repeat_exam = {
-                0: '2 Years',
-                1: '1 Year',
-                2: '6 Months',
-                3: '3 Month',
-                4: '1 Month'
-            }
-
-            referral = {
-                0: 'Not Required',
-                1: 'Not Required',
-                2: 'Required',
-                3: 'Required',
-                4: 'Required'
-            }
 
             legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
             
@@ -87,10 +72,9 @@ def predict(request):
             cropped_image.save(cropped_img_path[1:])
 
             # REPORT GENERATION
-            date = datetime.now().date().strftime('%m-%d-%Y')
             uploaded_img_str = image_file_path_to_base64_string(cropped_img_path[1:])
             gradcam_img_str = image_file_path_to_base64_string(gradcam_image.image.url[1:])
-            report = generate_report(date=date, prediction=labels[predicted_label], description=description[predicted_label], uploaded_image=uploaded_img_str, importance_image=gradcam_img_str)
+            report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str)
             report_io = BytesIO()
             report_io.write(report)
             report_io.seek(0)
@@ -159,12 +143,14 @@ def team(request):
         'lead_team': [{
                 'name': 'Anuj Tiwari',
                 'description': 'Senior Research Associate',
-                'img': 'anuj.jpeg'
+                'img': 'anuj.jpeg',
+                'affiliation': 'Discovery Partners Institute'
         },
         {
                 'name': 'Aarsh Patel',
-                'description': 'Machine Learning Engineer',
-                'img': 'aarsh.jpeg'
+                'description': 'Gratuade Student Researcher',
+                'img': 'aarsh.jpeg',
+                'affiliation': 'University of Illinois at Chicago'
         }],
         'research_team': [{
                 'name': 'John Doe',

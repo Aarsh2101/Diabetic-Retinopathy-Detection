@@ -3,6 +3,15 @@ from django.conf import settings
 
 # Create your models here.
 class RetinaPhoto(models.Model):
+    GENDER_CHOICES = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Other', 'Other'),
+    ]
+    name = models.CharField(max_length=30, blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
+    dob = models.DateField(blank=True, null=True)
+    location = models.CharField(max_length=50, blank=True)
     image = models.ImageField(upload_to='retina_images/')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     def __str__(self):

@@ -90,6 +90,7 @@ def predict(request):
                 'retina_gradcam_img_path': gradcam_image.image.url,
                 'correct_label_form': correct_label_form,
                 'legend_values': legend_values,
+                'report': report.file.url,
             }
             return render(request, 'results.html', context)
     else:

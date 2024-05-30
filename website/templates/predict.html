@@ -26,8 +26,27 @@
             {% csrf_token %}
             <div class="row gtr-uniform gtr-50">
                 <div class="col-12">
-                    <h3>Upload a Fundus Image</h3>
-                    {{ form }}
+                    <h3 class="form-title">Patient Information</h3>
+                    {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.field.widget.input_type == 'radio' %}
+                        <div class="form-field radio-group">
+                            {% for choice in field.field.choices %}
+                            
+                                <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" value="{{ choice.0 }}" id="{{ field.auto_id }}_{{ forloop.counter }}" {% if field.field.required %}required{% endif %}>
+                                <label class="radio-label" for="{{ field.auto_id }}_{{ forloop.counter }}">{{ choice.1 }}</label>
+                            
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="form-field">
+                            {{ field }}
+                        </div>
+                            
+                        {% endif %}
+                    </div>
+                    {% endfor %}
                 </div>
                 <div class="col-12">
                     <ul class="actions special">
@@ -36,6 +55,7 @@
                 </div>
             </div>
         </form>
+        
     </section>
 </div>
     

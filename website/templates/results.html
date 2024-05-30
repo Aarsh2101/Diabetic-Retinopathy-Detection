@@ -20,7 +20,22 @@
             <p class="description"> {{description}}</p>
         </div>
     </div>
+    <div class="report-btn">
+        <a href="{{ report }}" download class="button primary">Download Report</a>
+    </div>
     <hr>
+    <div>
+        <h2 class="h2-heading">How to Use the Model</h2>
+        <ol>
+            <li>You can view the Importance image overlay on the fundus image below. Use the transparency slider to adjust the visibility of the overlay.</li>
+            <li>Use the color range to understand the importance levels in the Importance image. This helps you identify which regions of the fundus image are most significant in predicting the severity of diabetic retinopathy.</li>
+            <li>If both the prediction and the highlighted important regions are correct, simply click the "Yes" button on the right side of the image.</li>
+            <li>If either the prediction or the important regions are incorrect, select "No" to access options for correcting the prediction.</li>
+            <li>To correct the highlighted important regions, click on a color and draw on the image. Use the block size slider to adjust the size of the brush.</li>
+            <li>To correct the severity prediction, select the correct severity level from the provided options.</li>
+            <li>Finally, click the "Submit" button to send your corrections. Your input will help improve our machine learning model.</li>
+        </ol>
+    </div>
     <div class="flex-container">
         <div class="flex-item">
             <div class="content">

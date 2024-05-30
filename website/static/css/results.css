@@ -217,3 +217,7 @@ input[type=range]::-moz-range-thumb {
 input[name="correct_label"] + label {
     display: block;
 }
+
+.report-btn {
+    text-align: center;
+}

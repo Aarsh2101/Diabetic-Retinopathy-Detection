@@ -9,3 +9,28 @@
     font-weight: 500;
     margin: 1rem 0;
 }
+
+.form-title {
+    text-align: center;
+    font-size: 2em;
+}
+
+.form-group label {
+    margin: 20px;
+    width: 30%;
+}
+
+.radio-label {
+    margin: 20px 40px 20px 0px !important;
+    width: 10% !important;
+}
+
+.form-field {
+    width: 60%;
+}
+
+.form-group .dob-select {
+    width: 33.3%; 
+    display: inline-block;
+}
+

@@ -74,13 +74,13 @@ def predict(request):
             # REPORT GENERATION
             uploaded_img_str = image_file_path_to_base64_string(cropped_img_path[1:])
             gradcam_img_str = image_file_path_to_base64_string(gradcam_image.image.url[1:])
-            report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str)
+            report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str, patient_info=form.cleaned_data)
             report_io = BytesIO()
             report_io.write(report)
             report_io.seek(0)
             report = Report(file=File(report_io, name='report.pdf'), retina_photo=form.instance)
             report.save()
-
+            
             correct_label_form = CorrectLabelForm()
             context = {
                 'predicted_label': labels[predicted_label],
@@ -95,10 +95,16 @@ def predict(request):
             return render(request, 'results.html', context)
     else:
         form = RetinaPhotoForm()
-        sample_img_zip = ZipFile.objects.get(user=request.user)
+        sample_img_zip = get_object_or_404(ZipFile, user=request.user)
+        if sample_img_zip.file and hasattr(sample_img_zip.file, 'url'):
+            file_url = sample_img_zip.file.url
+        else:
+            file_url = None
+
         context = {
             'form': form,
-            'sample_img_zip': sample_img_zip.file.url,
+            'sample_img_zip': file_url,
+            'user_info': request.user,
             }
     return render(request, 'predict.html', context)
 

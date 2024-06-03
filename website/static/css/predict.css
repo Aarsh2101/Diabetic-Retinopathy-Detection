@@ -34,3 +34,10 @@
     display: inline-block;
 }
 
+.patient-info {
+    display: flex;
+}
+
+.specialist-info label {
+    width: 100%;
+}

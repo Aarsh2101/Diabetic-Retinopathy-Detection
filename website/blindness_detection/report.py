@@ -1,7 +1,7 @@
 import pdfkit
 from datetime import datetime
 
-def generate_report(prediction=None, uploaded_image=None, importance_image=None):
+def generate_report(prediction=None, uploaded_image=None, importance_image=None, patient_info=None):
     html_template = """
     <!DOCTYPE html>
     <html lang="en">
@@ -148,7 +148,7 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None)
         4: '#e51f1f'
     }
     
-
+    print(patient_info)
     html = html_template.format(date=date, severity=labels[prediction], description=description[prediction], repeat_in=repeat_exam[prediction], referral=referral[prediction], uploaded_img=uploaded_image, importance_img=importance_image, prediction_color=severity_color[prediction])
     report = pdfkit.from_string(html, False)
     return report

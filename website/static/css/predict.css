@@ -17,12 +17,12 @@
 
 .form-group label {
     margin: 20px;
-    width: 30%;
+    width: 35%;
 }
 
 .radio-label {
     margin: 20px 40px 20px 0px !important;
-    width: 10% !important;
+    width: 20% !important;
 }
 
 .form-field {
@@ -34,10 +34,24 @@
     display: inline-block;
 }
 
-.patient-info {
+.patient-specialist-info {
     display: flex;
 }
 
-.specialist-info label {
-    width: 100%;
+.patient-info {
+    width: 50%;
+}
+
+.specialist-info {
+    width: 50%;
+}
+
+.vertical-line {
+    border-left: 1px solid rgba(255, 255, 255, 0.3); 
+    margin-left: 10px; 
+    padding-left: 10px; 
+}
+
+.update-user {
+    text-align: center;
 }

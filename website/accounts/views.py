@@ -2,9 +2,11 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .forms import CustomUserCreationForm
 from .models import *
+import json
 
 def register(request):
     if request.method == 'POST':
@@ -37,3 +39,16 @@ def login_view(request):
 def logout_view(request): 
     logout(request)
     return redirect('index')
+
+@csrf_exempt
+def update_user_info(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        user = request.user
+        user.first_name = data.get('first_name')
+        user.last_name = data.get('last_name')
+        user.email = data.get('email')
+        user.affiliation = data.get('affiliation')
+        user.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})

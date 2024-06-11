@@ -37,6 +37,24 @@ def index(request):
 @login_required(login_url='/login/')
 def predict(request):
     if request.method == 'POST':
+            return HttpResponse('POST request')
+    else:
+        form = RetinaPhotoForm()
+        sample_img_zip = get_object_or_404(ZipFile, user=request.user)
+        if sample_img_zip.file and hasattr(sample_img_zip.file, 'url'):
+            file_url = sample_img_zip.file.url
+        else:
+            file_url = None
+
+        context = {
+            'form': form,
+            'sample_img_zip': file_url,
+            'user_info': request.user,
+            }
+    return render(request, 'predict.html', context)
+
+def results(request):
+    if request.method == 'POST':
         form = RetinaPhotoForm(request.POST, request.FILES)
         if form.is_valid():
             form.instance.user = request.user
@@ -74,7 +92,8 @@ def predict(request):
             # REPORT GENERATION
             uploaded_img_str = image_file_path_to_base64_string(cropped_img_path[1:])
             gradcam_img_str = image_file_path_to_base64_string(gradcam_image.image.url[1:])
-            report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str, patient_info=form.cleaned_data)
+            specialist = request.user
+            report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str, patient_info=form.cleaned_data, specialist_info=specialist)
             report_io = BytesIO()
             report_io.write(report)
             report_io.seek(0)
@@ -106,7 +125,7 @@ def predict(request):
             'sample_img_zip': file_url,
             'user_info': request.user,
             }
-    return render(request, 'predict.html', context)
+    return render(request, 'results.html', context)
 
 def correct_prediction(request):
     if request.method == 'POST':

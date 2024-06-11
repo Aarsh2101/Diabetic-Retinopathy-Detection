@@ -1,18 +1,19 @@
 import pdfkit
 from datetime import datetime
 
-def generate_report(prediction=None, uploaded_image=None, importance_image=None, patient_info=None):
+def generate_report(prediction=None, uploaded_image=None, importance_image=None, patient_info=None, specialist_info=None):
     html_template = """
     <!DOCTYPE html>
     <html lang="en">
     <head>
+    <link href='https://fonts.googleapis.com/css?family=Cardo' rel='stylesheet'>
         <style>
             @page {{
                 size: A4;
                 margin: 1cm;
             }}
             body {{
-                font-family: Arial, sans-serif;
+                font-family: Arial;
                 margin: 0;
                 padding: 0;
             }}
@@ -54,7 +55,7 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 text-align: right;
             }}
             .prediction {{
-                font-size: 32px;
+                font-size: 40px;
                 margin: 10px 0;
                 color: {prediction_color};
             }}
@@ -64,7 +65,7 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 text-align: justify;
             }}
             .exam-info {{
-                overflow: auto; /* To clear the float */
+                overflow: auto; 
             }}
         
             .exam-info div {{
@@ -79,6 +80,39 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 text-align: left;
                 font-size: 12px;
             }}
+            .patient-specialist-info {{
+                width: 100%;
+                margin-top: 25px;
+                text-align: left;
+                border-collapse: collapse;
+                border: none;
+                font-size: 22px;
+            }}
+            .heading-row {{
+                background-color: #D6954D;
+            }}
+            .prediction-table {{
+                border-collapse: collapse;
+                width: 100%;
+                margin: 30px 0px;
+            }}
+            .prediction-table td, .prediction-table th {{
+                border: 1px solid #000; 
+                padding: 8px;
+            }}
+            tbody tr {{
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }}
+            .prediction-title {{
+                font-size: 32px;
+            }}
+            .recommendation-table .heading-row {{
+                text-align: left;
+                font-size: 30px;
+                display: block;
+                padding: 10px 0;
+            }}
         </style>
     </head>
     <body>
@@ -87,13 +121,48 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 <h1 class="main-title">Diabetic Retinopathy (DR) Exam Result</h1>
                 <p class="date">Date: {date}</p>
             </div>
-            <p class="status">Detected Severity of Diabetic Retinopathy:</p>
-            <p class="prediction">{severity}</p>
-            <p class="description">{description}</p>
+            <hr>
+            <table class="patient-specialist-info">
+                <thead>
+                    <tr class="heading-row">
+                        <th>Patient Information</th>
+                        <th>Specialist Information</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Name: {patient_name}</td>
+                        <td>Name: {specialist_name}</td>
+                    </tr>
+                    <tr>
+                        <td>Gender: {patient_gender}</td>
+                        <td>Email: {specialist_email}</td>
+                    </tr>
+                    <tr>
+                        <td>DOB: {patient_dob}</td>
+                        <td>Affiliation: {affiliation}</td>
+                    </tr>
+                    <tr>
+                        <td>Location: {patient_location}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="prediction-table">
+                <tbody>
+                    <tr class="prediction-title heading-row">
+                        <td>Detected Severity of Diabetic Retinopathy </td>
+                    </tr>
+                    <tr class="prediction">
+                        <td>{severity}</td>
+                    </tr>
+                </tbody>
+            </table>
             <div class="exam-info">
                 <div>Repeat exam in: <strong>{repeat_in}</strong></div>
                 <div>Referral to Ophthalmologist: <strong>{referral}</strong></div>
             </div>
+            
+            
             <div class="eye-results">
                 <div>
                     <p>Uploaded Fundus Image</p>
@@ -104,6 +173,17 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                     <img class="importance-img" src="data:image/png;base64,{importance_img}" alt="">
                 </div>
             </div>
+            <table class="recommendation-table">
+                <tbody>
+                    <tr class="heading-row">
+                        <td>Plan and Recommendations</td>
+                    </tr>
+                    <tr class="description">
+                        <td>{description}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr>
             <div class="footer">
                 <p class="disclaimer">*The image resolutions have been reduced. Do not use these thumbnail images for diagnostic purposes.</p>
             </div>
@@ -148,7 +228,20 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
         4: '#e51f1f'
     }
     
-    print(patient_info)
-    html = html_template.format(date=date, severity=labels[prediction], description=description[prediction], repeat_in=repeat_exam[prediction], referral=referral[prediction], uploaded_img=uploaded_image, importance_img=importance_image, prediction_color=severity_color[prediction])
+    html = html_template.format(date=date, 
+        severity=labels[prediction], 
+        description=description[prediction], 
+        repeat_in=repeat_exam[prediction], 
+        referral=referral[prediction], 
+        uploaded_img=uploaded_image, 
+        importance_img=importance_image, 
+        prediction_color=severity_color[prediction], 
+        patient_name=patient_info['name'],
+        patient_gender=patient_info['gender'],
+        patient_dob=patient_info['dob'], 
+        patient_location=patient_info['location'], 
+        specialist_name=specialist_info.first_name+" "+specialist_info.last_name, 
+        affiliation=specialist_info.affiliation,
+        specialist_email=specialist_info.email)
     report = pdfkit.from_string(html, False)
     return report

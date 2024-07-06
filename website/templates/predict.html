@@ -21,70 +21,134 @@
             <li>You can download some sample images if you don't have any by clicking the button below</li>
         </ul>
         <a href="{{ sample_img_zip }}" download class="button primary">Download Sample Images</a>
+    </section>
+
+    <form action="predict" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
         <hr>
-        <div class="patient-specialist-info">
-            <div class="patient-info">
-                <form action="results" method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="row gtr-uniform gtr-50">
-                        <div class="col-12">
-                            <h3 class="form-title">Patient Information</h3>
-                            {% for field in form %}
-                            <div class="form-group">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {% if field.field.widget.input_type == 'radio' %}
-                                <div class="form-field radio-group">
-                                    {% for choice in field.field.choices %}
-                                    
-                                        <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" value="{{ choice.0 }}" id="{{ field.auto_id }}_{{ forloop.counter }}" {% if field.field.required %}required{% endif %} {% if forloop.first %}checked{% endif %}>
-                                        <label class="radio-label" for="{{ field.auto_id }}_{{ forloop.counter }}">{{ choice.1 }}</label>
-                                    
-                                    {% endfor %}
-                                </div>
-                                {% else %}
-                                <div class="form-field">
-                                    {{ field }}
-                                </div>
-                                    
-                                {% endif %}
+        <section>
+            <div class="patient-specialist-info">
+                <div class="patient-info">
+                    
+                        <div class="row gtr-uniform gtr-50">
+                            <div class="col-12">
+                                <h3 class="form-title">Patient Information</h3>
+                                {% for field in patient_form %}
+                                    {% if field.name != 'image' %}
+                                        <div class="form-group">
+                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                            {% if field.field.widget.input_type == 'radio' %}
+                                            <div class="form-field radio-group">
+                                                {% for choice in field.field.choices %}
+                                                
+                                                    <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" value="{{ choice.0 }}" id="{{ field.auto_id }}_{{ forloop.counter }}" {% if field.field.required %}required{% endif %} {% if forloop.first %}checked{% endif %}>
+                                                    <label class="radio-label" for="{{ field.auto_id }}_{{ forloop.counter }}">{{ choice.1 }}</label>
+                                                
+                                                {% endfor %}
+                                            </div>
+                                            {% else %}
+                                            <div class="form-field">
+                                                {{ field }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                            <div class="clear-form col-12">
+                                <button class="button primary" id="clear-form-button">Clear Form</button>
+                            </div>
+                            <!-- <div class="col-12">
+                                <ul class="actions special">
+                                    <li><input type="submit" value="Update Information" class="primary fit" /></li>
+                                </ul>
+                            </div> -->
                         </div>
-                        <div class="col-12">
-                            <ul class="actions special">
-                                <li><input type="submit" value="Predict" class="primary fit" /></li>
-                            </ul>
+                </div>
+        
+                <div class="specialist-info vertical-line">
+                    <h3 class="form-title">Specialist Information</h3>
+                    <div class="form-group">
+                        <label for="specialist-first-name">First Name</label>
+                        <input type="text" id="specialist-first-name" value="{{user_info.first_name}}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialist-last-name">Last Name</label>
+                        <input type="text" id="specialist-last-name" value="{{user_info.last_name}}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialist-email">Email</label>
+                        <input type="email" id="specialist-email" value="{{user_info.email}}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialist-affiliation">Affiliation</label>
+                        <input type="text" id="specialist-affiliation" value="{{user_info.affiliation}}" readonly>
+                    </div>
+                    <div class="update-user">
+                        <button class="button primary" id="update-user-button">Update Information</button>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+    
+        <hr>
+        <section>
+            <div class="container">
+                <h2 class="">Model Architecture</h2>
+                <img class="model-architecture" src="{% static 'images/resnet50.gif'%}" alt="">
+            </div>
+        </section>
+
+        <hr>
+        <section>
+            <h2 class="">Upload a Fundus Image</h2>
+            {% for field in patient_form %}
+                {% if field.name == 'image' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="form-field">
+                            {{ field }}
                         </div>
                     </div>
-                </form>
+                {% endif %}
+            {% endfor %}
+            <div class="col-12">
+                <ul class="actions special">
+                    <li><input type="submit" value="Predict" class="primary fit" /></li>
+                </ul>
             </div>
 
-            <div class="specialist-info vertical-line">
-                <h3 class="form-title">Specialist Information</h3>
-                <div class="form-group">
-                    <label for="specialist-first-name">First Name</label>
-                    <input type="text" id="specialist-first-name" value="{{user_info.first_name}}">
+        </section>
+    </form>
+
+    {% if predicted_label %}
+        <hr>
+        <section>
+            <div class="section-1">
+                <div>
+                    <h3 class="image-title">Uploaded Image</h3>
+                    <img src="{{cropped_img_path}}" id="uploaded_image">
                 </div>
-                <div class="form-group">
-                    <label for="specialist-last-name">Last Name</label>
-                    <input type="text" id="specialist-last-name" value="{{user_info.last_name}}">
+                <div>
+                    <h3 class="image-title">Importance Image</h3>
+                    <img src="{{retina_gradcam_img_path}}" id="importance_image">
                 </div>
-                <div class="form-group">
-                    <label for="specialist-email">Email</label>
-                    <input type="email" id="specialist-email" value="{{user_info.email}}">
+                <div class="prediction">
+                    <h2>
+                        <div class="severity-text">Predicted Severity:</div> 
+                        <div class="label-text">{{predicted_label}}</div>
+                    </h2>
+                    <p class="description"> {{description}}</p>
                 </div>
-                <div class="form-group">
-                    <label for="specialist-affiliation">Affiliation</label>
-                    <input type="text" id="specialist-affiliation" value="{{user_info.affiliation}}">
-                </div>
-                <div class="update-user">
-                    <button class="button primary" id="update-user-button">Update Information</button>
-                </div>
-                
             </div>
-        </div>
-        
-    </section>
+            <div class="report-btn">
+                <a href="{{ report }}" download class="button primary">Download Report</a>
+                <a href="results" class="button primary">Give Feedback</a>
+            </div>
+        </section>
+    {% endif %}
+
 </div>
     
 <script src="{% static 'js/update_user_info.js' %}"></script>

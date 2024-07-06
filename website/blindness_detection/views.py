@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files import File
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
-from .forms import RetinaPhotoForm, CorrectLabelForm
+from .forms import RetinaPhotoForm, CorrectLabelForm, PatientForm
 from .models import *
 from accounts.models import *
 from .DDRpredict import get_predicted_label_and_gradcam
@@ -37,39 +37,19 @@ def index(request):
 @login_required(login_url='/login/')
 def predict(request):
     if request.method == 'POST':
-            return HttpResponse('POST request')
-    else:
-        form = RetinaPhotoForm()
-        sample_img_zip = get_object_or_404(ZipFile, user=request.user)
-        if sample_img_zip.file and hasattr(sample_img_zip.file, 'url'):
-            file_url = sample_img_zip.file.url
-        else:
-            file_url = None
+        print(request.POST)
+        patient_form = PatientForm(request.POST, request.FILES)
+        if patient_form.is_valid():
+            patient_form.instance.user = request.user
+            patient_form.save()
 
-        context = {
-            'form': form,
-            'sample_img_zip': file_url,
-            'user_info': request.user,
-            }
-    return render(request, 'predict.html', context)
-
-def results(request):
-    if request.method == 'POST':
-        form = RetinaPhotoForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.instance.user = request.user
-            form.save()
-
-            img = form.instance.image
+            img = patient_form.instance.image
             img = Image.open(img)
-            img_name = os.path.basename(form.instance.image.name)
+            img_name = os.path.basename(patient_form.instance.image.name)
             request.session['img_name'] = img_name  # Store img_name in the session data
-            # request.session['retina_photo_id'] = form.instance.id  # Store retina_photo_id in the session data
-            # retina_gradcam_img_path = settings.MEDIA_URL + 'retina_gradcam_images/' + img_name
             cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
 
             cropped_image, predicted_label, gradcam_image, legend_range = get_predicted_label_and_gradcam(img)
-            
             labels = ['No Diabetic Retinopathy', 'Mild Diabetic Retinopathy', 'Moderate Diabetic Retinopathy', 'Severe Diabetic Retinopathy', 'Proliferative Diabetic Retinopathy']
             
             description = {
@@ -80,40 +60,54 @@ def results(request):
                 4: 'This is the proliferative stage of diabetic retinopathy, the most severe form, where new and abnormal blood vessels begin to develop on the retina and into the vitreous gel. These vessels are fragile and prone to bleeding, significantly threatening vision and potentially leading to retinal detachment or blindness. Immediate and aggressive medical treatment is essential to manage this stage and preserve as much vision as possible.'
                 }
             
-
             legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
             
             gradcam_image_django = pil_image_to_django_file(gradcam_image, img_name)
-            gradcam_image = GradcamImage(image=gradcam_image_django, retina_photo=form.instance)
+            gradcam_image = GradcamImage(image=gradcam_image_django, retina_photo=patient_form.instance)
             gradcam_image.save()
-            # gradcam_image.save(retina_gradcam_img_path[1:])
+
             cropped_image.save(cropped_img_path[1:])
 
             # REPORT GENERATION
             uploaded_img_str = image_file_path_to_base64_string(cropped_img_path[1:])
             gradcam_img_str = image_file_path_to_base64_string(gradcam_image.image.url[1:])
             specialist = request.user
-            report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str, patient_info=form.cleaned_data, specialist_info=specialist)
+            report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str, patient_info=patient_form.cleaned_data, specialist_info=specialist)
             report_io = BytesIO()
             report_io.write(report)
             report_io.seek(0)
-            report = Report(file=File(report_io, name='report.pdf'), retina_photo=form.instance)
+            report = Report(file=File(report_io, name='report.pdf'), retina_photo=patient_form.instance)
             report.save()
-            
-            correct_label_form = CorrectLabelForm()
-            context = {
+
+            results_context = { 
                 'predicted_label': labels[predicted_label],
-                'description': description[predicted_label],
                 'cropped_img_path': cropped_img_path,
-                'retina_img_path': form.instance.image.url,
                 'retina_gradcam_img_path': gradcam_image.image.url,
-                'correct_label_form': correct_label_form,
                 'legend_values': legend_values,
-                'report': report.file.url,
             }
-            return render(request, 'results.html', context)
+            request.session['results_context'] = results_context
+
+        sample_img_zip = get_object_or_404(ZipFile, user=request.user)
+        if sample_img_zip.file and hasattr(sample_img_zip.file, 'url'):
+            file_url = sample_img_zip.file.url
+        else:
+            file_url = None
+        
+        context = {
+            'patient_form': patient_form,
+            # 'retina_photo_form': retina_photo_form,
+            'sample_img_zip': file_url,
+            'user_info': request.user,
+            'predicted_label': labels[predicted_label],
+            'description': description[predicted_label],
+            'cropped_img_path': cropped_img_path,
+            'retina_gradcam_img_path': gradcam_image.image.url,
+            'report': report.file.url,
+            }
+        return render(request, 'predict.html', context)
     else:
-        form = RetinaPhotoForm()
+        patient_form = PatientForm()
+        retina_photo_form = RetinaPhotoForm()
         sample_img_zip = get_object_or_404(ZipFile, user=request.user)
         if sample_img_zip.file and hasattr(sample_img_zip.file, 'url'):
             file_url = sample_img_zip.file.url
@@ -121,11 +115,91 @@ def results(request):
             file_url = None
 
         context = {
-            'form': form,
+            'patient_form': patient_form,
+            'retina_photo_form': retina_photo_form,
             'sample_img_zip': file_url,
             'user_info': request.user,
             }
-    return render(request, 'results.html', context)
+    return render(request, 'predict.html', context)
+
+def results(request):
+    results_context = request.session.get('results_context', None)
+    if results_context:
+        return render(request, 'results.html', results_context)
+
+# def results(request):
+#     if request.method == 'POST':
+#         form = RetinaPhotoForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             form.instance.user = request.user
+#             form.save()
+
+#             img = form.instance.image
+#             img = Image.open(img)
+#             img_name = os.path.basename(form.instance.image.name)
+#             request.session['img_name'] = img_name  # Store img_name in the session data
+#             # request.session['retina_photo_id'] = form.instance.id  # Store retina_photo_id in the session data
+#             # retina_gradcam_img_path = settings.MEDIA_URL + 'retina_gradcam_images/' + img_name
+#             cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
+
+#             cropped_image, predicted_label, gradcam_image, legend_range = get_predicted_label_and_gradcam(img)
+            
+#             labels = ['No Diabetic Retinopathy', 'Mild Diabetic Retinopathy', 'Moderate Diabetic Retinopathy', 'Severe Diabetic Retinopathy', 'Proliferative Diabetic Retinopathy']
+            
+#             description = {
+#                 0: 'The retina is completely clear of any signs of diabetic retinopathy, indicating that the retinal vessels are healthy and undamaged by diabetes. This is an optimal outcome, and maintaining regular monitoring is recommended to ensure that the retina remains healthy. Lifestyle modifications and managing blood sugar levels are advised to continue preventing the onset of retinopathy.',
+#                 1: '''Early signs of diabetic retinopathy are evident, characterized by microaneurysms — small areas of swelling in the blood vessels of the retina. At this stage, there typically aren't noticeable symptoms affecting vision, but it's crucial to monitor the condition closely. Yearly eye exams are recommended to track any changes and manage diabetes effectively to halt the progression.''',
+#                 2: 'This stage shows moderate non-proliferative diabetic retinopathy with more pronounced changes, such as blocked blood vessels that can affect retinal nourishment. Patients might start experiencing slight vision issues. It is critical at this stage to manage diabetes rigorously and consult with an eye care professional every six months to monitor the condition closely and discuss potential interventions.',
+#                 3: 'Marked by severe non-proliferative diabetic retinopathy, a significant number of retinal blood vessels are now blocked, severely reducing blood flow to various parts of the retina. This condition can lead to complications like DME (Diabetic Macular Edema). Close and immediate medical supervision is necessary, with treatment options evaluated to prevent the disease from advancing to the proliferative stage.',
+#                 4: 'This is the proliferative stage of diabetic retinopathy, the most severe form, where new and abnormal blood vessels begin to develop on the retina and into the vitreous gel. These vessels are fragile and prone to bleeding, significantly threatening vision and potentially leading to retinal detachment or blindness. Immediate and aggressive medical treatment is essential to manage this stage and preserve as much vision as possible.'
+#                 }
+            
+
+#             legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
+            
+#             gradcam_image_django = pil_image_to_django_file(gradcam_image, img_name)
+#             gradcam_image = GradcamImage(image=gradcam_image_django, retina_photo=form.instance)
+#             gradcam_image.save()
+#             # gradcam_image.save(retina_gradcam_img_path[1:])
+#             cropped_image.save(cropped_img_path[1:])
+
+#             # REPORT GENERATION
+#             # uploaded_img_str = image_file_path_to_base64_string(cropped_img_path[1:])
+#             # gradcam_img_str = image_file_path_to_base64_string(gradcam_image.image.url[1:])
+#             # specialist = request.user
+#             # report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str, patient_info=form.cleaned_data, specialist_info=specialist)
+#             # report_io = BytesIO()
+#             # report_io.write(report)
+#             # report_io.seek(0)
+#             # report = Report(file=File(report_io, name='report.pdf'), retina_photo=form.instance)
+#             # report.save()
+            
+#             correct_label_form = CorrectLabelForm()
+#             context = {
+#                 'predicted_label': labels[predicted_label],
+#                 'description': description[predicted_label],
+#                 'cropped_img_path': cropped_img_path,
+#                 'retina_img_path': form.instance.image.url,
+#                 'retina_gradcam_img_path': gradcam_image.image.url,
+#                 'correct_label_form': correct_label_form,
+#                 'legend_values': legend_values,
+#                 # 'report': report.file.url,
+#             }
+#             return render(request, 'results.html', context)
+#     else:
+#         form = RetinaPhotoForm()
+#         sample_img_zip = get_object_or_404(ZipFile, user=request.user)
+#         if sample_img_zip.file and hasattr(sample_img_zip.file, 'url'):
+#             file_url = sample_img_zip.file.url
+#         else:
+#             file_url = None
+
+#         context = {
+#             'form': form,
+#             'sample_img_zip': file_url,
+#             'user_info': request.user,
+#             }
+#     return render(request, 'results.html', context)
 
 def correct_prediction(request):
     if request.method == 'POST':
@@ -198,8 +272,8 @@ def team(request):
 
 @login_required(login_url='/login/')
 def dashboard(request):
-    submissions = RetinaPhoto.objects.filter(user=request.user)
-        
+    submissions = Patient.objects.filter(user=request.user)
+    print(submissions)    
     context = {
         'submissions': submissions,
     }

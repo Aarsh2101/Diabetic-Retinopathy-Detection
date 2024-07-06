@@ -1,0 +1,18 @@
+<!-- accounts/register.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2 class="center-text h2-heading">Register</h2>
+<form method="POST" enctype="multipart/form-data" class="center-form">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" id="{{ field.auto_id }}" value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %}>
+    </div>
+    {% endfor %}
+    <button type="submit" class="button primary register-button">Register</button>
+</form>
+
+{% endblock %}

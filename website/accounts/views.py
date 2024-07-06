@@ -52,3 +52,6 @@ def update_user_info(request):
         user.save()
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
+
+def profile(request):
+    return render(request, 'accounts/profile.html')

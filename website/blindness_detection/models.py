@@ -3,6 +3,12 @@ from django.conf import settings
 
 # Create your models here.
 class RetinaPhoto(models.Model):
+    image = models.ImageField(upload_to='retina_images/')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.image.name
+
+class Patient(models.Model):
     GENDER_CHOICES = [
         ('Male', 'Male'),
         ('Female', 'Female'),
@@ -15,11 +21,11 @@ class RetinaPhoto(models.Model):
     image = models.ImageField(upload_to='retina_images/')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     def __str__(self):
-        return self.image.name
+        return self.name
 
 class GradcamImage(models.Model):
     image = models.ImageField(upload_to='retina_gradcam_images/')
-    retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='gradcam_image')
+    retina_photo = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='gradcam_image')
     
     def __str__(self):
         return self.image.name
@@ -27,7 +33,7 @@ class GradcamImage(models.Model):
 class CanvasImage(models.Model):
     image = models.ImageField(upload_to='canvas_images/')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='canvas_images')
-    retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='canvas_image')
+    retina_photo = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='canvas_image')
 
 
 class CorrectLabel(models.Model):
@@ -40,9 +46,9 @@ class CorrectLabel(models.Model):
         # Add more choices as needed
     ]
     correct_label = models.CharField(max_length=100, choices=LABEL_CHOICES, default='No Diabetic Retinopathy')
-    retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='correct_label')
+    retina_photo = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='correct_label')
 
 class Report(models.Model):
     file = models.FileField(upload_to='reports/')
-    retina_photo = models.OneToOneField('RetinaPhoto', on_delete=models.CASCADE, related_name='report')
+    retina_photo = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='report')
     created_at = models.DateTimeField(auto_now_add=True)

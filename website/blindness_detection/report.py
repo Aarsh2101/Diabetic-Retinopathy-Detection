@@ -1,5 +1,17 @@
 import pdfkit
 from datetime import datetime
+import base64
+from django.templatetags.static import static
+from django.conf import settings
+import os
+
+image_path = static('images/eye_main_banner.jpg')
+image_path = os.path.join(settings.BASE_DIR, image_path.lstrip('/'))
+
+
+with open(image_path, "rb") as image_file:
+    encoded_string = base64.b64encode(image_file.read()).decode()
+
 
 def generate_report(prediction=None, uploaded_image=None, importance_image=None, patient_info=None, specialist_info=None):
     html_template = """
@@ -22,12 +34,21 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 padding: 20px;
                 text-align: center;
             }}
+            .logo {{
+                display: inline-block;
+                width: 90px;
+                position: relative;
+                top: 15px;
+            }}
+            .logo img {{
+                width: 100%;
+            }}
             .status {{
                 font-size: 24px;
                 margin: 10px 0;
             }}
             .exam-info {{
-                font-size: 20px;
+                font-size: 24px;
                 margin: 20px 0;
             }}
             .eye-results {{
@@ -35,32 +56,36 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 margin: 20px 0;
             }}
             .eye-results div {{
+                font-size: 24px;
                 display: inline-block;
                 margin: 0 10px;
                 text-align: center;
-                width: 45%;
+                width: 47%;
             }}
             .eye-results img {{
                 border-radius: 10px;
             }}
             .main-title {{
-                font-size: 22px;
+                font-size: 24px;
                 margin: 20px 0;
-                width: 65%; 
+                width: 60%; 
                 display: inline-block;
+                position: relative;
+                top: -20px;
             }}
             .date {{
-                width: 25%; 
+                width: 20%; 
                 display: inline-block;
                 text-align: right;
+                position: relative;
+                top: -20px;
             }}
             .prediction {{
-                font-size: 40px;
+                font-size: 24px;
                 margin: 10px 0;
-                color: {prediction_color};
             }}
             .description {{
-                font-size: 18px;
+                font-size: 24px;
                 margin: 20px 0;
                 text-align: justify;
             }}
@@ -73,8 +98,8 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 float: left;
             }}
             .uploaded-img, .importance-img{{
-                width: 300px;
-                height: 300px;
+                width: 350px;
+                height: 350px;
             }}
             .disclaimer {{
                 text-align: left;
@@ -86,9 +111,11 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 text-align: left;
                 border-collapse: collapse;
                 border: none;
-                font-size: 22px;
+                font-size: 24px;
             }}
             .heading-row {{
+                font-size: 28px;
+                font-weight: bold;
                 background-color: #D6954D;
             }}
             .prediction-table {{
@@ -105,11 +132,11 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
                 margin-bottom: 10px;
             }}
             .prediction-title {{
-                font-size: 32px;
+                font-weight: bold;
+                font-size: 28px;
             }}
             .recommendation-table .heading-row {{
                 text-align: left;
-                font-size: 30px;
                 display: block;
                 padding: 10px 0;
             }}
@@ -118,6 +145,9 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
     <body>
         <div class="container">
             <div class="title-date">
+                <div class="logo">
+                    <img src="data:image/jpeg;base64,{encoded_string}" alt="Logo">
+                </div>
                 <h1 class="main-title">Diabetic Retinopathy (DR) Exam Result</h1>
                 <p class="date">Date: {date}</p>
             </div>
@@ -165,12 +195,12 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
             
             <div class="eye-results">
                 <div>
-                    <p>Uploaded Fundus Image</p>
                     <img class="uploaded-img" src="data:image/png;base64,{uploaded_img}" alt="">
+                     <p>Uploaded Fundus Image</p>
                 </div>
                 <div>
-                    <p>Importance Image</p>
                     <img class="importance-img" src="data:image/png;base64,{importance_img}" alt="">
+                    <p>Reasoning Image</p>
                 </div>
             </div>
             <table class="recommendation-table">
@@ -220,13 +250,6 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
         3: 'Required',
         4: 'Required'
     }
-    severity_color = {
-        0: '#44ce1b',
-        1: '#bbdb44',
-        2: '#f7e379',
-        3: '#f2a134',
-        4: '#e51f1f'
-    }
     
     html = html_template.format(date=date, 
         severity=labels[prediction], 
@@ -235,13 +258,13 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
         referral=referral[prediction], 
         uploaded_img=uploaded_image, 
         importance_img=importance_image, 
-        prediction_color=severity_color[prediction], 
         patient_name=patient_info['name'],
         patient_gender=patient_info['gender'],
-        patient_dob=patient_info['dob'], 
+        patient_dob=patient_info['dob'].strftime('%m/%d/%Y'), 
         patient_location=patient_info['location'], 
         specialist_name=specialist_info.first_name+" "+specialist_info.last_name, 
         affiliation=specialist_info.affiliation,
-        specialist_email=specialist_info.email)
+        specialist_email=specialist_info.email,
+        encoded_string=encoded_string)
     report = pdfkit.from_string(html, False)
     return report

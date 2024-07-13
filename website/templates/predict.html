@@ -56,7 +56,10 @@
                                 {% endfor %}
                             </div>
                             <div class="clear-form col-12">
-                                <button class="button primary" id="clear-form-button">Clear Form</button>
+                                <ul class="actions special">
+                                        <!-- <button class="button primary" id="clear-form-button" type="reset">Clear Form</button> -->
+                                        <li><input type="reset" value="Clear Form" class="primary fit" /></li>
+                                </ul>
                             </div>
                             <!-- <div class="col-12">
                                 <ul class="actions special">
@@ -85,7 +88,7 @@
                         <input type="text" id="specialist-affiliation" value="{{user_info.affiliation}}" readonly>
                     </div>
                     <div class="update-user">
-                        <button class="button primary" id="update-user-button">Update Information</button>
+                        <a href="profile" class="button primary" id="update-user-button">Update Information</a>
                     </div>
                     
                 </div>
@@ -142,7 +145,7 @@
                     <p class="description"> {{description}}</p>
                 </div>
             </div>
-            <div class="report-btn">
+            <div class="action-btn">
                 <a href="{{ report }}" download class="button primary">Download Report</a>
                 <a href="results" class="button primary">Give Feedback</a>
             </div>
@@ -151,5 +154,4 @@
 
 </div>
     
-<script src="{% static 'js/update_user_info.js' %}"></script>
 {% endblock %}

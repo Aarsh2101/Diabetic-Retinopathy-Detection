@@ -24,3 +24,12 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+class CustomUserChangeForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CustomUserChangeForm, self).__init__(*args, **kwargs)
+        self.fields['profile_picture'].required = False
+
+    class Meta:
+        model = CustomUser
+        fields = ['profile_picture', 'first_name', 'last_name', 'affiliation', 'email']

@@ -1,3 +1,7 @@
+.container {
+    margin-bottom: 50px;
+}
+
 .instruction-img {
     width: 100%;
     height: 100%;
@@ -107,6 +111,10 @@
     font-size: 25px;
 }
 
-.report-btn {
+.action-btn {
     text-align: center;
+}
+
+.action-btn a {
+    margin: 0 25px;
 }

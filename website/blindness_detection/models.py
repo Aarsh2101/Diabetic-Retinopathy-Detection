@@ -9,6 +9,7 @@ class RetinaPhoto(models.Model):
         return self.image.name
 
 class Patient(models.Model):
+    patient_id = models.AutoField(primary_key=True)
     GENDER_CHOICES = [
         ('Male', 'Male'),
         ('Female', 'Female'),
@@ -21,7 +22,7 @@ class Patient(models.Model):
     image = models.ImageField(upload_to='retina_images/')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     def __str__(self):
-        return self.name
+        return str(self.patient_id)
 
 class GradcamImage(models.Model):
     image = models.ImageField(upload_to='retina_gradcam_images/')
@@ -35,7 +36,9 @@ class CanvasImage(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='canvas_images')
     retina_photo = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='canvas_image')
 
-
+    def __str__(self):
+        return self.image.name
+        
 class CorrectLabel(models.Model):
     LABEL_CHOICES = [
         ('No Diabetic Retinopathy', 'No Diabetic Retinopathy'),
@@ -46,7 +49,7 @@ class CorrectLabel(models.Model):
         # Add more choices as needed
     ]
     correct_label = models.CharField(max_length=100, choices=LABEL_CHOICES, default='No Diabetic Retinopathy')
-    retina_photo = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='correct_label')
+    patient = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='correct_label')
 
 class Report(models.Model):
     file = models.FileField(upload_to='reports/')

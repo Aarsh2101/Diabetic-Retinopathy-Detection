@@ -4,7 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .forms import CustomUserCreationForm
+from .forms import *
 from .models import *
 import json
 
@@ -40,18 +40,13 @@ def logout_view(request):
     logout(request)
     return redirect('index')
 
-@csrf_exempt
-def update_user_info(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        user = request.user
-        user.first_name = data.get('first_name')
-        user.last_name = data.get('last_name')
-        user.email = data.get('email')
-        user.affiliation = data.get('affiliation')
-        user.save()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
-
 def profile(request):
-    return render(request, 'accounts/profile.html')
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('predict') 
+    else:
+        form = CustomUserChangeForm(instance=request.user)
+        context = {'form': form}
+    return render(request, 'accounts/profile.html', context)

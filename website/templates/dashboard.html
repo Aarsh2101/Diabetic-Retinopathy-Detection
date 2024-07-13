@@ -20,7 +20,7 @@
                     <td><img src="{{ submission.canvas_image.image.url }}" class="table-image" id="canvas_image_{{ submission.id }}" alt="Canvas image"></td>
                     <td>{{ submission.correct_label.correct_label }}</td>
                     <td>
-                        <a href="{% url 'update_submission' submission.id %}">Edit/View</a>
+                        <a href="{% url 'update_submission' submission.patient_id %}">Edit/View</a>
                     </td>
                 </tr>
             {% endfor %}

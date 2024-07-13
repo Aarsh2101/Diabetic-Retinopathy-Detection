@@ -3,7 +3,7 @@
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/results.css' %}">
 <div class="container">
-    <div class="section-1">
+    <!-- <div class="section-1">
         <div>
             <h3 class="image-title">Uploaded Image</h3>
             <img src="{{cropped_img_path}}" id="uploaded_image">
@@ -22,9 +22,9 @@
     </div>
     <div class="report-btn">
         <a href="{{ report }}" download class="button primary">Download Report</a>
-    </div>
-    
-    <hr>
+    </div> 
+    <hr> -->
+
     <div>
         <h2 class="h2-heading">How to submit feedback</h2>
         <ol>
@@ -57,9 +57,9 @@
                     </div>
                 </div>
             </div>
-        
+
+            <!-- transparency slider -->
             <div class="slider-container">
-                <!-- transparency slider -->
                 <div class="transparency-slider">
                     <label for="transparency">Transparency of importance image: </label>
                     <input type="range" id="transparency" name="transparency" min="0" max="1" step="0.1" value="1">
@@ -106,7 +106,7 @@
                 </div>
                 <div id="correct_label_form" style="display: none;">
                     <h3>Correct Severity</h3>
-                    <form id="prediction-form" class="center-content"  action="correct_prediction" method="POST" enctype="multipart/form-data">
+                    <form action="correct_prediction" id="prediction-form" class="center-content" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% for field in correct_label_form %}
                             <div class="col-4 col-12-medium">

@@ -37,7 +37,6 @@ def index(request):
 @login_required(login_url='/login/')
 def predict(request):
     if request.method == 'POST':
-        print(request.POST)
         patient_form = PatientForm(request.POST, request.FILES)
         if patient_form.is_valid():
             patient_form.instance.user = request.user
@@ -62,6 +61,13 @@ def predict(request):
             
             legend_values = [round(num, 3) for num in np.linspace(legend_range['min'], legend_range['max'], 5).tolist()]
             
+            # Save the correct label in the database
+            correct_label_form = CorrectLabelForm()
+            correct_label_form.instance.patient = patient_form.instance
+            correct_label_form.instance.correct_label = labels[predicted_label]
+            correct_label_form.instance.save()
+     
+            # Save the gradcam image in the database
             gradcam_image_django = pil_image_to_django_file(gradcam_image, img_name)
             gradcam_image = GradcamImage(image=gradcam_image_django, retina_photo=patient_form.instance)
             gradcam_image.save()
@@ -105,6 +111,7 @@ def predict(request):
             'report': report.file.url,
             }
         return render(request, 'predict.html', context)
+
     else:
         patient_form = PatientForm()
         retina_photo_form = RetinaPhotoForm()
@@ -124,6 +131,11 @@ def predict(request):
 
 def results(request):
     results_context = request.session.get('results_context', None)
+    # del request.session['results_context']
+    img_name = request.session.get('img_name', 'default.png')
+    patient = Patient.objects.get(image = 'retina_images/'+ img_name )
+
+    results_context['correct_label_form'] = CorrectLabelForm(instance=patient)
     if results_context:
         return render(request, 'results.html', results_context)
 
@@ -203,14 +215,12 @@ def results(request):
 
 def correct_prediction(request):
     if request.method == 'POST':
-        correct_label_form = CorrectLabelForm(request.POST)
         img_name = request.session.get('img_name', 'default.png')
-        retina_photo = RetinaPhoto.objects.get(image = 'retina_images/'+ img_name )
-        correct_label_form.instance.retina_photo = retina_photo
-        # correct_label.instance.retina_photo = request.session.get('img_name', 'default.png')
-        # post_data = request.POST.copy()  # Make a mutable copy
-        # post_data['image_name'] = request.session.get('img_name', 'default.png')  # Add image_name
-        # form = CorrectLabelForm(post_data)  # Use the modified POST data
+        patient = Patient.objects.get(image = 'retina_images/'+ img_name )
+
+        correct_label_instance = CorrectLabel.objects.get(patient=patient)
+        correct_label_form = CorrectLabelForm(request.POST, instance=correct_label_instance)
+        correct_label_form.instance.patient = patient
 
         if correct_label_form.is_valid():
             correct_label_form.save()
@@ -223,13 +233,12 @@ def correct_prediction(request):
 def save_canvas_image(request):
     
     if request.method == 'POST':
-        # print(request.data)
         data = json.loads(request.body)
         image_data_url = data['imageDataUrl']
         format, imgstr = image_data_url.split(';base64,') 
         ext = format.split('/')[-1] 
         img_name = request.session.get('img_name', 'default.png')
-        retina_photo = RetinaPhoto.objects.get(image = 'retina_images/'+ img_name )
+        retina_photo = Patient.objects.get(image = 'retina_images/'+ img_name )
         data = ContentFile(base64.b64decode(imgstr), name=img_name)
         
         canvas_image = CanvasImage(image=data, created_by=request.user, retina_photo=retina_photo)
@@ -245,42 +254,48 @@ def team(request):
                 'description': 'Senior Research Associate',
                 'img': 'anuj.jpeg',
                 'affiliation': 'Discovery Partners Institute'
-        },
-        {
+            },
+            {
                 'name': 'Aarsh Patel',
                 'description': 'Gratuade Student Researcher',
                 'img': 'aarsh.jpeg',
                 'affiliation': 'University of Illinois at Chicago'
-        }],
+            },
+            {
+                'name': 'Yoonseo Kim',
+                'description': 'Highschool Summer Intern',
+                'img': 'yoonseo.png',
+                'affiliation': 'Illinois Mathematics and Science Academy​'
+            }],
+
         'research_team': [{
                 'name': 'John Doe',
                 'description': 'Machine Learning Engineer',
                 'img': 'default-profile.svg'
-        },
-        {
+            },
+            {
                 'name': 'John Doe',
                 'description': 'Machine Learning Engineer',
                 'img': 'default-profile.svg'
-        },
-        {
+            },
+            {
                 'name': 'John Doe',
                 'description': 'Machine Learning Engineer',
                 'img': 'default-profile.svg'
-        },]
+            },]
     }
     return render(request, 'team.html', context)
 
 @login_required(login_url='/login/')
 def dashboard(request):
-    submissions = Patient.objects.filter(user=request.user)
-    print(submissions)    
+    submissions = Patient.objects.filter(user=request.user)   
     context = {
         'submissions': submissions,
     }
     return render(request, 'dashboard.html', context)
 
 def update_submission(request, submission_id):
-    submission = get_object_or_404(RetinaPhoto, pk=submission_id)
+    submission = get_object_or_404(Patient, pk=submission_id)
     
     if request.method == 'POST':
         correct_label_form = CorrectLabelForm(request.POST, instance=submission.correct_label)
@@ -304,7 +319,7 @@ def update_canvas_image(request):
         data = json.loads(request.body)
         image_data_url = data['imageDataUrl']
         submission_id = data['submissionId']
-        retina_photo = get_object_or_404(RetinaPhoto, pk=submission_id)
+        retina_photo = get_object_or_404(Patient, pk=submission_id)
         format, imgstr = image_data_url.split(';base64,') 
         ext = format.split('/')[-1] 
         img_name = retina_photo.image.name.split('/')[-1]

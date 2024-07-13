@@ -28,6 +28,7 @@
 								<li class="opener">
 									<img src="{{ user.profile_picture.url }}" class="profile-picture" alt="Profile Picture">
 									<ul>
+										<li><a href="{% url 'profile' %}">Edit Profile</a></li>
 										<li><a href="{% url 'predict' %}">Model</a></li>
 										<li><a href="{% url 'dashboard' %}">Dashboard</a></li>
 										<li><a href="{% url 'logout' %}" class="button primary">Log out</a></li>

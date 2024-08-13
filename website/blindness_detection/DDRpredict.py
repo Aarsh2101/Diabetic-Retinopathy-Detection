@@ -30,13 +30,13 @@ def get_cropped_image(image):
 
     return cropped
 
-def preprocess_image(image, size=(224, 224)):
+def preprocess_image(cropped_image, size=(224, 224)):
     import numpy as np
     from PIL import Image
     import cv2
     
     # Resize the cropped image to the desired size
-    cropped = image.resize(size, Image.Resampling.LANCZOS)
+    cropped = cropped_image.resize(size, Image.Resampling.LANCZOS)
 
     # # Color normalization
     # mean = np.mean(cropped, axis=(0, 1))
@@ -49,7 +49,6 @@ def preprocess_image(image, size=(224, 224)):
     l_clahe = clahe.apply(l)
     image_clahe = cv2.merge((l_clahe, a, b))
     image_clahe_rgb = cv2.cvtColor(image_clahe, cv2.COLOR_LAB2RGB)
-
 
     # Convert the image to uint8 before applying Gaussian blur
     image_clahe_rgb_uint8 = (image_clahe_rgb * 255).astype(np.uint8)

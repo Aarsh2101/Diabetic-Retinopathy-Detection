@@ -146,8 +146,41 @@
                 </div>
             </div>
             <div class="action-btn">
-                <a href="{{ report }}" download class="button primary">Download Report</a>
+                <!-- <a href="{{ report }}" download class="button primary">Download Report</a> -->
                 <a href="results" class="button primary">Give Feedback</a>
+            </div>
+        </section>
+
+        <hr>
+        <section>
+            <div class="section-1">
+                <div>
+                    <h3 class="image-title">Blood Vessels</h3>
+                    <img src="{{blood_vessels_path}}" id="importance_image">
+                </div>
+                <div>
+                    <h3 class="image-title">Microaneurysms</h3>
+                    <img src="{{blood_vessels_path}}" id="importance_image">
+                </div>
+                <div>
+                    <h3 class="image-title">Hemorrhages</h3>
+                    <img src="{{hemorrhages_path}}" id="importance_image">
+                </div>
+                <div>
+                    <h3 class="image-title">Hard Exudates</h3>
+                    <img src="{{blood_vessels_path}}" id="importance_image">
+                </div>
+                <div>
+                    <h3 class="image-title">Soft Exudates</h3>
+                    <img src="{{blood_vessels_path}}" id="importance_image">
+                </div>
+                <div>
+                    <h3 class="image-title">Optical Disc</h3>
+                    <img src="{{blood_vessels_path}}" id="importance_image">
+                </div>
+            </div>
+            <div class="action-btn">
+                <a href="{{ report }}" download class="button primary">Download Report</a>
             </div>
         </section>
     {% endif %}
@@ -155,3 +188,4 @@
 </div>
     
 {% endblock %}
+

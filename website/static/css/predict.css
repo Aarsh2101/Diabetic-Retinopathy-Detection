@@ -74,6 +74,7 @@
 
 .section-1 {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     padding: 20px 0px;
@@ -81,6 +82,8 @@
 
 .section-1 div {
     width: 100%;
+    flex: 1 1 30%; 
+    margin: 10px;
     text-align: center;
 }
 

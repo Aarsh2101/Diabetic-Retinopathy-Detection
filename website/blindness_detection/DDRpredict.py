@@ -84,7 +84,8 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
         nn.Sigmoid()
     )
     model.load_state_dict(torch.load('/path/to/local/file Detection/website/blindness_detection/DDRresnet50.pth', map_location=device))
-
+    model.to(device)
+    model.eval()
 
     preprocess = v2.Compose([
     v2.Resize((224, 224)),
@@ -105,9 +106,6 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
 
     test_image_tensor = test_image_tensor.to(device)
     original_image_tensor = original_image_tensor.to(device)
-
-    model.to(device)
-    model.eval()
 
     cam_extractor = torchcam.methods.GradCAM(model, last_conv_layer)
     out = model(test_image_tensor.unsqueeze(0)) 

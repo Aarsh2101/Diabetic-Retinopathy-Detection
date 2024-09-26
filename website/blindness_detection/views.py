@@ -8,6 +8,8 @@ from .forms import RetinaPhotoForm, CorrectLabelForm, PatientForm
 from .models import *
 from accounts.models import *
 from .DDRpredict import get_predicted_label_and_gradcam
+from .bvsegment import get_blood_vessels
+from .hemorrhages import get_hemorrhages
 from .report import generate_report
 import numpy as np
 from PIL import Image
@@ -48,6 +50,14 @@ def predict(request):
             request.session['img_name'] = img_name  # Store img_name in the session data
             cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
 
+            blood_vessels = get_blood_vessels(img)
+            blood_vessels = Image.fromarray(blood_vessels)
+            blood_vessels_path = settings.MEDIA_URL + 'blood_vessels/' + img_name
+            blood_vessels.save(blood_vessels_path[1:])
+            hemorrhages = get_hemorrhages(img)
+            hemorrhages = Image.fromarray(hemorrhages)
+            hemorrhages_path = settings.MEDIA_URL + 'hemorrhages/' + img_name
+            hemorrhages.save(hemorrhages_path[1:])
             cropped_image, predicted_label, gradcam_image, legend_range = get_predicted_label_and_gradcam(img)
             labels = ['No Diabetic Retinopathy', 'Mild Diabetic Retinopathy', 'Moderate Diabetic Retinopathy', 'Severe Diabetic Retinopathy', 'Proliferative Diabetic Retinopathy']
             
@@ -106,6 +116,8 @@ def predict(request):
             'user_info': request.user,
             'predicted_label': labels[predicted_label],
             'description': description[predicted_label],
+            'blood_vessels_path': blood_vessels_path,
+            'hemorrhages_path': hemorrhages_path,
             'cropped_img_path': cropped_img_path,
             'retina_gradcam_img_path': gradcam_image.image.url,
             'report': report.file.url,

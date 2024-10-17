@@ -1,18 +1,7 @@
-from PIL import Image, ImageOps
-import numpy as np
-import cv2
-import torch
-from torchvision.transforms import v2
-import torch.nn as nn
-from torchvision import models
-from torchvision.transforms.functional import to_pil_image
-import torchcam
-from torch.nn.parameter import Parameter
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
-import os
-
 def get_cropped_image(image):
+    import numpy as np
+    from PIL import Image
+    import cv2
     # Convert the image to a numpy array and then to grayscale
     img = np.array(image)
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -42,6 +31,9 @@ def get_cropped_image(image):
     return cropped
 
 def preprocess_image(cropped_image, size=(224, 224)):
+    import numpy as np
+    from PIL import Image
+    import cv2
     
     # Resize the cropped image to the desired size
     cropped = cropped_image.resize(size, Image.Resampling.LANCZOS)
@@ -67,31 +59,31 @@ def preprocess_image(cropped_image, size=(224, 224)):
     image_denoised = Image.fromarray(image_denoised)
     return image_denoised
 
-def gem(x, p=3, eps=1e-6):
-    return F.avg_pool2d(x.clamp(min=eps).pow(p), (x.size(-2), x.size(-1))).pow(1./p)
-class GeM(nn.Module):
-    def __init__(self, p=3, eps=1e-6):
-        super(GeM,self).__init__()
-        self.p = Parameter(torch.ones(1)*p)
-        self.eps = eps
-    def forward(self, x):
-        return gem(x, p=self.p, eps=self.eps)       
-    def __repr__(self):
-        return self.__class__.__name__ + '(' + 'p=' + '{:.4f}'.format(self.p.data.tolist()[0]) + ', ' + 'eps=' + str(self.eps) + ')'
-
 
 def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
     """ Get the predicted label and GradCAM image for the input image and model for the last_conv_layer"""
+    import numpy as np
+    from PIL import Image, ImageOps
+    import cv2
+    import torch
+    from torch.utils.data import Dataset, DataLoader
+    from torchvision.transforms import v2
+    import torch.nn as nn
+    from torchvision import models
+    from torchvision.transforms.functional import to_pil_image
+    import torchcam
+    import matplotlib.pyplot as plt
     
     device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     
     # Load the model and set the last layer to have 5 output classes
     model = models.resnet50(weights='ResNet50_Weights.DEFAULT')
     num_classes = 5 # Number of predicted classes
-    model.fc = nn.Linear(model.fc.in_features, num_classes)
-    model.avgpool = GeM()
-
-    model.load_state_dict(torch.load('/path/to/local/file Detection/website/blindness_detection/DDRresnet50_best_acc final.pth', map_location=device))
+    model.fc = nn.Sequential(
+        nn.Linear(model.fc.in_features, num_classes),
+        nn.Sigmoid()
+    )
+    model.load_state_dict(torch.load('/path/to/local/file Detection/website/blindness_detection/DDRresnet50.pth', map_location=device))
     model.to(device)
     model.eval()
 
@@ -117,13 +109,13 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
 
     cam_extractor = torchcam.methods.GradCAM(model, last_conv_layer)
     out = model(test_image_tensor.unsqueeze(0)) 
-    predicted_class = out.cpu().detach().numpy().argmax(axis=1)[0]
-    cams = cam_extractor([predicted_class], out)
+    predicted_class = int(np.round(out.cpu().detach().numpy()).astype(int).sum() - 1)
+    cams = cam_extractor(predicted_class, out)
 
     mask = cams[0].squeeze(0)
     mask_range = {'min': mask.min().cpu(), 'max': mask.max().cpu()}
     custom_cmap = plt.cm.colors.ListedColormap(['#218AE5', '#FFFFFF', '#FF1D62'])
 
-    gradcam_image = torchcam.utils.overlay_mask(to_pil_image(original_image_tensor), to_pil_image(mask, mode='F'), alpha=0.0)
-
+    gradcam_image = torchcam.utils.overlay_mask(to_pil_image(original_image_tensor), to_pil_image(mask, mode='F'), alpha=0.0, colormap=custom_cmap)
+    # print(mask.max(), mask.min())
     return cropped_image, predicted_class, gradcam_image, mask_range

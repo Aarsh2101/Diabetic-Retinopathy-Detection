@@ -11,6 +11,7 @@ from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 
 def get_cropped_image(image):
     # Convert the image to a numpy array and then to grayscale
@@ -91,7 +92,14 @@ def get_predicted_label_and_gradcam(image, last_conv_layer='layer4'):
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     model.avgpool = GeM()
 
-    model.load_state_dict(torch.load('/path/to/local/file Detection/website/blindness_detection/DDRresnet50_best_acc final.pth', map_location=device))
+    default_model_path = Path(__file__).with_name('DDRresnet50_best_acc final.pth')
+    model_path = Path(os.environ.get('DR_MODEL_PATH', default_model_path))
+    if not model_path.is_file():
+        raise FileNotFoundError(
+            f'Model checkpoint not found at {model_path}. '
+            'Set DR_MODEL_PATH to the ResNet-50 checkpoint location.'
+        )
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     model.eval()
 

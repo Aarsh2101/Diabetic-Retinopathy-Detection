@@ -4,6 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files import File
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from .forms import RetinaPhotoForm, CorrectLabelForm, PatientForm
 from .models import *
 from accounts.models import *
@@ -17,6 +18,7 @@ from .report import generate_report
 import numpy as np
 from PIL import Image
 import os, json, base64
+from pathlib import Path
 from io import BytesIO
 from datetime import datetime
 
@@ -27,12 +29,26 @@ def pil_image_to_django_file(pil_image, image_name):
     return ContentFile(byte_arr.getvalue(), name=image_name)
 
 def image_file_path_to_base64_string(filepath: str) -> str:
-  '''
-  Takes a filepath and converts the image saved there to its base64 encoding,
-  then decodes that into a string.
-  '''
-  with open(filepath, 'rb') as f:
-    return base64.b64encode(f.read()).decode()
+    """Convert an image file to a base64 string."""
+    with open(filepath, 'rb') as f:
+        return base64.b64encode(f.read()).decode()
+
+
+def generated_image_location(folder: str, image_name: str) -> tuple[Path, str]:
+    """Create a media subdirectory and return its filesystem path and URL."""
+    directory = Path(settings.MEDIA_ROOT) / folder
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory / image_name, f'{settings.MEDIA_URL}{folder}/{image_name}'
+
+
+def current_patient(request):
+    patient_id = request.session.get('patient_submission_id')
+    return get_object_or_404(Patient, pk=patient_id, user=request.user)
+
+
+def sample_zip_url(user):
+    zip_file = ZipFile.objects.filter(user=user).first()
+    return zip_file.file.url if zip_file and zip_file.file else None
 
 # Create your views here.
 
@@ -49,31 +65,20 @@ def predict(request):
 
             img = patient_form.instance.image
             img = Image.open(img)
-            img_name = os.path.basename(patient_form.instance.image.name)
-            request.session['img_name'] = img_name  # Store img_name in the session data
-            cropped_img_path = settings.MEDIA_URL + 'cropped_images/' + img_name
+            image_name = f'{patient_form.instance.pk}_{os.path.basename(patient_form.instance.image.name)}'
+            request.session['patient_submission_id'] = patient_form.instance.pk
+            cropped_image_file, cropped_img_path = generated_image_location('cropped_images', image_name)
 
-            blood_vessels = get_blood_vessels(img)
-            blood_vessels = Image.fromarray(blood_vessels)
-            blood_vessels_path = settings.MEDIA_URL + 'blood_vessels/' + img_name
-            blood_vessels.save(blood_vessels_path[1:])
-            hemorrhages = get_hemorrhages(img)
-            hemorrhages = Image.fromarray(hemorrhages)
-            hemorrhages_path = settings.MEDIA_URL + 'hemorrhages/' + img_name
-            hemorrhages.save(hemorrhages_path[1:])
-            softexudates = get_softexudates(img)
-            softexudates = Image.fromarray(softexudates)
-            softexudates_path = settings.MEDIA_URL + 'softexudates/' + img_name
-            softexudates.save(softexudates_path[1:])
-            hardexudates = get_hardexudates(img)
-            hardexudates = Image.fromarray(hardexudates)
-            hardexudates_path = settings.MEDIA_URL + 'hardexudates/' + img_name
-            hardexudates.save(hardexudates_path[1:])
-
-            optical_disk = get_optical_disk(img)
-            optical_disk = Image.fromarray(optical_disk)
-            optical_disk_path = settings.MEDIA_URL + 'optical_disk/' + img_name
-            optical_disk.save(optical_disk_path[1:])
+            blood_vessels_file, blood_vessels_path = generated_image_location('blood_vessels', image_name)
+            Image.fromarray(get_blood_vessels(img)).save(blood_vessels_file)
+            hemorrhages_file, hemorrhages_path = generated_image_location('hemorrhages', image_name)
+            Image.fromarray(get_hemorrhages(img)).save(hemorrhages_file)
+            softexudates_file, softexudates_path = generated_image_location('softexudates', image_name)
+            Image.fromarray(get_softexudates(img)).save(softexudates_file)
+            hardexudates_file, hardexudates_path = generated_image_location('hardexudates', image_name)
+            Image.fromarray(get_hardexudates(img)).save(hardexudates_file)
+            optical_disk_file, optical_disk_path = generated_image_location('optical_disk', image_name)
+            Image.fromarray(get_optical_disk(img)).save(optical_disk_file)
 
             cropped_image, predicted_label, gradcam_image, legend_range = get_predicted_label_and_gradcam(img)
             labels = ['No Diabetic Retinopathy', 'Mild Diabetic Retinopathy', 'Moderate Diabetic Retinopathy', 'Severe Diabetic Retinopathy', 'Proliferative Diabetic Retinopathy']
@@ -95,15 +100,15 @@ def predict(request):
             correct_label_form.instance.save()
      
             # Save the gradcam image in the database
-            gradcam_image_django = pil_image_to_django_file(gradcam_image, img_name)
+            gradcam_image_django = pil_image_to_django_file(gradcam_image, image_name)
             gradcam_image = GradcamImage(image=gradcam_image_django, retina_photo=patient_form.instance)
             gradcam_image.save()
 
-            cropped_image.save(cropped_img_path[1:])
+            cropped_image.save(cropped_image_file)
 
             # REPORT GENERATION
-            uploaded_img_str = image_file_path_to_base64_string(cropped_img_path[1:])
-            gradcam_img_str = image_file_path_to_base64_string(gradcam_image.image.url[1:])
+            uploaded_img_str = image_file_path_to_base64_string(cropped_image_file)
+            gradcam_img_str = image_file_path_to_base64_string(gradcam_image.image.path)
             specialist = request.user
             report = generate_report(prediction=predicted_label, uploaded_image=uploaded_img_str, importance_image=gradcam_img_str, patient_info=patient_form.cleaned_data, specialist_info=specialist)
             report_io = BytesIO()
@@ -120,16 +125,16 @@ def predict(request):
             }
             request.session['results_context'] = results_context
 
-        sample_img_zip = get_object_or_404(ZipFile, user=request.user)
-        if sample_img_zip.file and hasattr(sample_img_zip.file, 'url'):
-            file_url = sample_img_zip.file.url
-        else:
-            file_url = None
-        
+        if not patient_form.is_valid():
+            return render(request, 'predict.html', {
+                'patient_form': patient_form,
+                'sample_img_zip': sample_zip_url(request.user),
+                'user_info': request.user,
+            })
+
         context = {
             'patient_form': patient_form,
-            # 'retina_photo_form': retina_photo_form,
-            'sample_img_zip': file_url,
+            'sample_img_zip': sample_zip_url(request.user),
             'user_info': request.user,
             'predicted_label': labels[predicted_label],
             'description': description[predicted_label],
@@ -147,64 +152,48 @@ def predict(request):
     else:
         patient_form = PatientForm()
         retina_photo_form = RetinaPhotoForm()
-        sample_img_zip = get_object_or_404(ZipFile, user=request.user)
-        if sample_img_zip.file and hasattr(sample_img_zip.file, 'url'):
-            file_url = sample_img_zip.file.url
-        else:
-            file_url = None
-
         context = {
             'patient_form': patient_form,
             'retina_photo_form': retina_photo_form,
-            'sample_img_zip': file_url,
+            'sample_img_zip': sample_zip_url(request.user),
             'user_info': request.user,
             }
     return render(request, 'predict.html', context)
 
+@login_required(login_url='/login/')
 def results(request):
-    results_context = request.session.get('results_context', None)
-    # del request.session['results_context']
-    img_name = request.session.get('img_name', 'default.png')
-    patient = Patient.objects.get(image = 'retina_images/'+ img_name )
+    results_context = request.session.get('results_context')
+    if not results_context:
+        return redirect('predict')
 
-    results_context['correct_label_form'] = CorrectLabelForm(instance=patient)
-    if results_context:
-        return render(request, 'results.html', results_context)
+    patient = current_patient(request)
+    results_context['correct_label_form'] = CorrectLabelForm(instance=patient.correct_label)
+    return render(request, 'results.html', results_context)
 
 
+@login_required(login_url='/login/')
+@require_POST
 def correct_prediction(request):
-    if request.method == 'POST':
-        img_name = request.session.get('img_name', 'default.png')
-        patient = Patient.objects.get(image = 'retina_images/'+ img_name )
+    patient = current_patient(request)
+    correct_label_form = CorrectLabelForm(request.POST, instance=patient.correct_label)
+    if correct_label_form.is_valid():
+        correct_label_form.save()
+    return redirect('predict')
 
-        correct_label_instance = CorrectLabel.objects.get(patient=patient)
-        correct_label_form = CorrectLabelForm(request.POST, instance=correct_label_instance)
-        correct_label_form.instance.patient = patient
 
-        if correct_label_form.is_valid():
-            correct_label_form.save()
-            return redirect('predict')
-    else:
-        form = CorrectLabelForm()
-        return redirect('/')
-    
-
+@login_required(login_url='/login/')
+@require_POST
 def save_canvas_image(request):
-    
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        image_data_url = data['imageDataUrl']
-        format, imgstr = image_data_url.split(';base64,') 
-        ext = format.split('/')[-1] 
-        img_name = request.session.get('img_name', 'default.png')
-        retina_photo = Patient.objects.get(image = 'retina_images/'+ img_name )
-        data = ContentFile(base64.b64decode(imgstr), name=img_name)
-        
-        canvas_image = CanvasImage(image=data, created_by=request.user, retina_photo=retina_photo)
-        canvas_image.save()
-        
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
+    payload = json.loads(request.body)
+    _, image_data = payload['imageDataUrl'].split(';base64,', 1)
+    patient = current_patient(request)
+    image_name = patient.image.name.rsplit('/', 1)[-1]
+    canvas_file = ContentFile(base64.b64decode(image_data), name=image_name)
+    CanvasImage.objects.update_or_create(
+        retina_photo=patient,
+        defaults={'image': canvas_file, 'created_by': request.user},
+    )
+    return JsonResponse({'success': True})
 
 def team(request):
     context = {
@@ -253,41 +242,38 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
 
+@login_required(login_url='/login/')
 def update_submission(request, submission_id):
-    submission = get_object_or_404(Patient, pk=submission_id)
-    
+    submission = get_object_or_404(Patient, pk=submission_id, user=request.user)
+
     if request.method == 'POST':
         correct_label_form = CorrectLabelForm(request.POST, instance=submission.correct_label)
         if correct_label_form.is_valid():
             correct_label_form.save()
             return redirect('dashboard')
-
     else:
-        correct_label_form = CorrectLabelForm()
-        context = {
-            'text': 'get',
-            'retina_url': submission.image.url,
-            'gradcam_url': submission.gradcam_image.image.url,
-            'correct_label': submission.correct_label.correct_label,
-            'correct_label_form': correct_label_form,
-        }
-        return render(request, 'update_submission.html', context)
+        correct_label_form = CorrectLabelForm(instance=submission.correct_label)
 
+    context = {
+        'retina_url': submission.image.url,
+        'gradcam_url': submission.gradcam_image.image.url,
+        'correct_label': submission.correct_label.correct_label,
+        'correct_label_form': correct_label_form,
+    }
+    return render(request, 'update_submission.html', context)
+
+
+@login_required(login_url='/login/')
+@require_POST
 def update_canvas_image(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        image_data_url = data['imageDataUrl']
-        submission_id = data['submissionId']
-        retina_photo = get_object_or_404(Patient, pk=submission_id)
-        format, imgstr = image_data_url.split(';base64,') 
-        ext = format.split('/')[-1] 
-        img_name = retina_photo.image.name.split('/')[-1]
-        data = ContentFile(base64.b64decode(imgstr), name=img_name)
-        
-        canvas_image = CanvasImage.objects.get(retina_photo=retina_photo)
-        canvas_image.image = data
-        canvas_image.save()
-        
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
+    payload = json.loads(request.body)
+    patient = get_object_or_404(Patient, pk=payload['submissionId'], user=request.user)
+    _, image_data = payload['imageDataUrl'].split(';base64,', 1)
+    image_name = patient.image.name.rsplit('/', 1)[-1]
+    canvas_file = ContentFile(base64.b64decode(image_data), name=image_name)
+    CanvasImage.objects.update_or_create(
+        retina_photo=patient,
+        defaults={'image': canvas_file, 'created_by': request.user},
+    )
+    return JsonResponse({'success': True})
 

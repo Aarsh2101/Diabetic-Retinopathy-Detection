@@ -1,5 +1,6 @@
 import pdfkit
 from datetime import datetime
+from html import escape
 import base64
 from django.templatetags.static import static
 from django.conf import settings
@@ -258,13 +259,13 @@ def generate_report(prediction=None, uploaded_image=None, importance_image=None,
         referral=referral[prediction], 
         uploaded_img=uploaded_image, 
         importance_img=importance_image, 
-        patient_name=patient_info['name'],
-        patient_gender=patient_info['gender'],
-        patient_dob=patient_info['dob'].strftime('%m/%d/%Y'), 
-        patient_location=patient_info['location'], 
-        specialist_name=specialist_info.first_name+" "+specialist_info.last_name, 
-        affiliation=specialist_info.affiliation,
-        specialist_email=specialist_info.email,
+        patient_name=escape(patient_info.get('name') or 'Not provided'),
+        patient_gender=escape(patient_info.get('gender') or 'Not provided'),
+        patient_dob=(patient_info.get('dob').strftime('%m/%d/%Y') if patient_info.get('dob') else 'Not provided'),
+        patient_location=escape(patient_info.get('location') or 'Not provided'),
+        specialist_name=escape(f'{specialist_info.first_name} {specialist_info.last_name}'.strip() or specialist_info.username),
+        affiliation=escape(specialist_info.affiliation or 'Not provided'),
+        specialist_email=escape(specialist_info.email or 'Not provided'),
         encoded_string=encoded_string)
     report = pdfkit.from_string(html, False)
     return report
